@@ -1,0 +1,50 @@
+select#page_template option[value="elementor_canvas"],
+select#page_template option[value="elementor_header_footer"],
+select#page_template option[value="elementor_theme"]{
+    display: none;
+}
+
+#elementor-panel-category-ribar-category .icon i::after,
+#elementor-panel-category-ribar-header-category .icon i::after,
+#elementor-panel-category-ribar-footer-category .icon i::after,
+#elementor-panel-category-ribar-shop-category .icon i::after,
+#elementor-panel-category-ribar-blog-category .icon i::after,
+#elementor-panel-category-ribar-product-category .icon i::after,
+#elementor-panel-category-ribar-article-category .icon i::after,
+#elementor-panel-category-ribar-compare-category .icon i::after
+{
+    content: '';
+    position: absolute;
+    background-image: url(../img/identity.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    right: 6px;
+    top: 6px;
+    width: 28px;
+    height: 28px;
+}
+
+.togglecss
+{
+    transition: 0.3s !important;
+    transform: rotate(90deg) !important;
+}
+
+#elementor-panel-category-ribar-category .elementor-panel-heading.elementor-panel-category-title::after,
+#elementor-panel-category-ribar-header-category .elementor-panel-heading.elementor-panel-category-title::after,
+#elementor-panel-category-ribar-footer-category .elementor-panel-heading.elementor-panel-category-title::after,
+#elementor-panel-category-ribar-shop-category .elementor-panel-heading.elementor-panel-category-title::after,
+#elementor-panel-category-ribar-blog-category .elementor-panel-heading.elementor-panel-category-title::after,
+#elementor-panel-category-ribar-product-category .elementor-panel-heading.elementor-panel-category-title::after,
+#elementor-panel-category-ribar-article-category .elementor-panel-heading.elementor-panel-category-title::after,
+#elementor-panel-category-ribar-compare-category .elementor-panel-heading.elementor-panel-category-title::after
+{
+    content: '';
+    width: 28px;
+    height: 28px;
+    display: block;
+    background-image: url(../img/identity.png);
+    margin-right: auto;
+    background-size: contain;
+    background-repeat: no-repeat;
+}

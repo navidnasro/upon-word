@@ -1,0 +1,18 @@
+.tab-item.active{
+    border-radius: 9px;
+    background: var(--theme-primary);
+    padding: 12px 28px;
+}
+
+.tab-item.active svg,
+.tab-item.active svg path{
+    fill: #ffffff;
+}
+
+.tab-item.active span{
+    color: #ffffff;
+}
+
+.tabs *::-webkit-scrollbar-thumb {
+    border: 5px solid #ffffff;
+}

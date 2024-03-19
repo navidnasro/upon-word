@@ -1,0 +1,18 @@
+        :root{
+            --body: #F9F9F9;
+            --menu-item: #525252;
+            --theme-primary: #F85A3E;
+            --theme-primary-border: #F85A3EAB;
+            --theme-primary-shadow: #F85A3E38;
+            --theme-primary-bg: #F85A3E1A;
+            --theme-secondary: #b53084;
+            --theme-secondary-border: #466CFFAB;
+            --theme-secondary-shadow: #466CFF38;
+            --theme-secondary-bg: #466CFF1A;
+            --separator: #E6E6E6;
+            --title: #43454D;
+            --title-light: #43454D80;
+            --sub-title: #8D8D8D;
+            --sidebar-item: #666666;
+        }
+        

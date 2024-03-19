@@ -1,0 +1,81 @@
+/* Sanitization , Normalization */
+
+*{
+    font-family: var(--global-font);
+    font-weight: 400;
+    direction: rtl;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+body , html{
+    overflow-x: hidden;
+}
+
+body{
+    background-color: var(--body);
+}
+
+a{
+    text-decoration: none;
+    cursor: pointer;
+}
+
+input,
+button,
+select{
+    outline: none;
+    border: none;
+    background: none;
+    box-shadow: none;
+}
+
+input:focus-visible{
+    outline: none;
+    border: none;
+    box-shadow: none;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+    transition: background-color 0s 600000s, color 0s 600000s;
+}
+
+ul , li{
+    list-style: none;
+}
+
+.swiper-slide a{
+    display: flex !important;
+}
+
+.swiper-slide{
+    overflow: visible; !important;
+}
+
+.mobile-search-input:focus-visible{
+    background: #ffffff !important;
+}
+
+/* Firefox */
+* {
+    scrollbar-width: auto;
+    scrollbar-color: #8a8a8a #ffffff;
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    width: 8px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #8a8a8a;
+    border-radius: 10px;
+    border: 2px solid #ffffff;
+}

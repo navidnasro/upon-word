@@ -1,0 +1,9 @@
+<svg width="30" height="30" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="vuesax/linear/shopping-bag">
+<g id="shopping-bag">
+<path id="Vector" d="M10.5 8.125H19.5C23.75 8.125 24.175 10.1125 24.4625 12.5375L25.5875 21.9125C25.95 24.9875 25 27.5 20.625 27.5H9.38753C5.00003 27.5 4.05003 24.9875 4.42503 21.9125L5.55004 12.5375C5.82504 10.1125 6.25003 8.125 10.5 8.125Z" stroke="var(--theme-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_2" d="M10 10V5.625C10 3.75 11.25 2.5 13.125 2.5H16.875C18.75 2.5 20 3.75 20 5.625V10" stroke="var(--theme-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+<path id="Vector_3" d="M25.5125 21.2876H10" stroke="var(--theme-primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</g>
+</g>
+</svg>
