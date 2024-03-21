@@ -5,7 +5,7 @@ namespace engine;
 use Elementor\Plugin;
 use engine\enums\Constants;
 use engine\enums\Defaults;
-use engine\utils\LabelUtils;
+use engine\utils\Label;
 
 defined('ABSPATH') || exit;
 
@@ -140,7 +140,7 @@ class ThemeInitializer
      */
     public function addPostTypes(): void
     {
-        $megaMenuLabels = LabelUtils::getLabel('مگامنو');
+        $megaMenuLabels = Label::getLabel('مگامنو');
 
         register_post_type('megamenu',
             [

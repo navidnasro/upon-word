@@ -2,8 +2,8 @@
 
 namespace engine\admin\taxonomies;
 
-use engine\utils\LabelUtils;
-use engine\utils\ThemeUtils;
+use engine\utils\Label;
+use engine\utils\Theme;
 use WP_Term;
 
 defined('ABSPATH') || exit;
@@ -49,7 +49,7 @@ class Brands implements Taxonomy
                     </button>
                 </div>
                 <div id="category-thumbnail">
-                    <img src="<?php echo esc_url( ThemeUtils::getDefaultImageUrl() ); ?>" width="60px" height="60px" alt="">
+                    <img src="<?php echo esc_url( Theme::getDefaultImageUrl() ); ?>" width="60px" height="60px" alt="">
                 </div>
             </div>
         </div>
@@ -120,7 +120,7 @@ class Brands implements Taxonomy
                     event.preventDefault();
 
                     // Set placeholder img
-                    thumbnail.attr('src','<?php echo esc_url( ThemeUtils::getDefaultImageUrl() ); ?>');
+                    thumbnail.attr('src','<?php echo esc_url( Theme::getDefaultImageUrl() ); ?>');
                     // Reset hidden input id
                     thumbnailID.val('0');
                     // Remove remove image button
@@ -150,7 +150,7 @@ class Brands implements Taxonomy
         if( $thumbnail_ID )
             $thumbnail = wp_get_attachment_thumb_url($thumbnail_ID);
         else
-            $thumbnail = ThemeUtils::getDefaultImageUrl();
+            $thumbnail = Theme::getDefaultImageUrl();
 
         // form to be displayed in taxonamy creation page
         ?>
@@ -238,7 +238,7 @@ class Brands implements Taxonomy
                     event.preventDefault();
 
                     // Set placeholder img
-                    thumbnail.attr('src','<?php echo esc_url( ThemeUtils::getDefaultImageUrl() ); ?>');
+                    thumbnail.attr('src','<?php echo esc_url( Theme::getDefaultImageUrl() ); ?>');
                     // Reset hidden input id
                     thumbnailID.val('0');
                     // Remove remove image button
@@ -299,7 +299,7 @@ class Brands implements Taxonomy
 
     public function getLabels(): array
     {
-        return LabelUtils::getLabel($this->singular);
+        return Label::getLabel($this->singular);
     }
 
     public function getDescription(): string

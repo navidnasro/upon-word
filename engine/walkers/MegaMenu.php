@@ -2,7 +2,7 @@
 
 namespace engine\walkers;
 
-use engine\utils\ElementorUtils;
+use engine\utils\Elementor;
 use Walker_Nav_Menu;
 
 defined('ABSPATH') || exit;
@@ -62,7 +62,7 @@ class MegaMenu extends Walker_Nav_Menu
             if(!empty($megaMenu))
             {
                 $output .= '<ul class="megamenu megamenu-'.$megaMenu.'">';
-                $output .= ElementorUtils::getTemplate($megaMenu);
+                $output .= Elementor::getTemplate($megaMenu);
                 $output .= '</ul>';
             }
         }

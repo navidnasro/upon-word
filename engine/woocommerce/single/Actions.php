@@ -2,10 +2,10 @@
 
 namespace engine\wc\single;
 
-use engine\utils\ElementorUtils;
-use engine\utils\TermUtils;
-use engine\utils\UserUtils;
-use engine\utils\WcUtils;
+use engine\utils\Elementor;
+use engine\utils\Term;
+use engine\utils\User;
+use engine\utils\Woocommerce;
 
 defined('ABSPATH') || exit;
 
@@ -76,7 +76,7 @@ class Actions
     {
         global $ribar_options;
 
-        if (ElementorUtils::isEditor() || ElementorUtils::isPreview())
+        if (Elementor::isEditor() || Elementor::isPreview())
             $product = wc_get_product($ribar_options['single-product-sample']);
 
         else
@@ -155,7 +155,7 @@ class Actions
     {
         global $ribar_options;
 
-        if (ElementorUtils::isEditor() || ElementorUtils::isPreview())
+        if (Elementor::isEditor() || Elementor::isPreview())
             $product = wc_get_product($ribar_options['single-product-sample']);
 
         else
@@ -178,7 +178,7 @@ class Actions
     {
         global $ribar_options;
 
-        if (ElementorUtils::isEditor() || ElementorUtils::isPreview())
+        if (Elementor::isEditor() || Elementor::isPreview())
             $product = wc_get_product($ribar_options['single-product-sample']);
 
         else
@@ -188,7 +188,7 @@ class Actions
         $ancestors = '';
 
         if($cats)
-            $ancestors = TermUtils::getTermAncestors(end($cats),true); //var_dump
+            $ancestors = Term::getTermAncestors(end($cats),true); //var_dump
 
         if ($style == 'linear')
             echo '<div class="flex flex-col items-center">';
@@ -207,7 +207,7 @@ class Actions
     {
         global $ribar_options;
 
-        if (ElementorUtils::isEditor() || ElementorUtils::isPreview())
+        if (Elementor::isEditor() || Elementor::isPreview())
             $product = wc_get_product($ribar_options['single-product-sample']);
 
         else
@@ -243,7 +243,7 @@ class Actions
     {
         global $ribar_options;
 
-        if (ElementorUtils::isEditor() || ElementorUtils::isPreview())
+        if (Elementor::isEditor() || Elementor::isPreview())
             $product = wc_get_product($ribar_options['single-product-sample']);
 
         else
@@ -265,10 +265,10 @@ class Actions
                 '<span class="text-[var(--title)] text-sm font-bold">';
 
                 if ($product->is_on_sale())
-                    echo WcUtils::getSalePrice($product).' تومان';
+                    echo Woocommerce::getSalePrice($product).' تومان';
 
                 else
-                    echo WcUtils::getRegularPrice($product).' تومان';
+                    echo Woocommerce::getRegularPrice($product).' تومان';
 
             echo '</span>'.
             '</div>';
@@ -283,7 +283,7 @@ class Actions
     {
         global $ribar_options;
 
-        if (ElementorUtils::isEditor() || ElementorUtils::isPreview())
+        if (Elementor::isEditor() || Elementor::isPreview())
             $product = wc_get_product($ribar_options['single-product-sample']);
 
         else
@@ -294,7 +294,7 @@ class Actions
         $pageID = $ribar_options['compare-page-elementor'];
 
         $compare = !is_null($compares) && in_array(get_the_ID(),$compares) ? 'added' : '';
-        $favorite = UserUtils::hasFavorited($product) ? 'added' : '';
+        $favorite = User::hasFavorited($product) ? 'added' : '';
 
         echo '<div class="flex items-center w-full justify-between">'.
             '<a href="'.$product->get_permalink().'"'.
@@ -345,7 +345,7 @@ class Actions
     {
         global $ribar_options;
 
-        if (ElementorUtils::isEditor() || ElementorUtils::isPreview())
+        if (Elementor::isEditor() || Elementor::isPreview())
             $product = wc_get_product($ribar_options['single-product-sample']);
 
         else
@@ -363,7 +363,7 @@ class Actions
     {
         global $ribar_options;
 
-        if (ElementorUtils::isEditor() || ElementorUtils::isPreview())
+        if (Elementor::isEditor() || Elementor::isPreview())
             $product = wc_get_product($ribar_options['single-product-sample']);
 
         else

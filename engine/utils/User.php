@@ -6,13 +6,15 @@ use WC_Product;
 
 defined('ABSPATH') || exit;
 
-class UserUtils
+class User
 {
     /**
+     * Checks if the user has already added the product to their favorites
+     *
      * @param WC_Product $product
      * @return bool
      */
-    public static function hasFavorited(WC_Product $product) : bool
+    public static function hasFavorite(WC_Product $product) : bool
     {
         $userID = get_current_user_id();
         $data = get_user_meta($userID,'favorites',true);
@@ -24,6 +26,8 @@ class UserUtils
     }
 
     /**
+     * Adds the product to user's favorites
+     *
      * @param int $productID
      * @return void
      */
@@ -41,6 +45,8 @@ class UserUtils
     }
 
     /**
+     * Removes the product from user's favorites
+     *
      * @param int $productID
      * @return void
      */
@@ -56,6 +62,8 @@ class UserUtils
     }
 
     /**
+     * Returns user favorite products
+     *
      * @return mixed
      */
     public static function getFavorites() : mixed
@@ -65,14 +73,16 @@ class UserUtils
     }
 
     /**
+     * Checks if the product exists in compare
+     *
      * @param int $productID
      * @return bool
      */
     public static function hasCompare(int $productID): bool
     {
-        if(isset($_COOKIE['compare']))
+        if(Cookie::exists('compare'))
         {
-            $products = unserialize(base64_decode($_COOKIE['compare']));
+            $products = Cookie::get('compare');
 
             return in_array($productID,$products);
         }
@@ -81,55 +91,43 @@ class UserUtils
     }
 
     /**
+     * Adds the product for compare
+     *
      * @param int $productID
      * @return void
      */
     public static function addCompare(int $productID): void
     {
         //if user already has added some products and cookie's been set
-        if(isset($_COOKIE['compare']))
+        if(Cookie::exists('compare'))
         {
-            $products = unserialize(base64_decode($_COOKIE['compare']));
+            $products = Cookie::get('compare');
 
             //cookie must be updated if a new product is viewed
-            if (!in_array($productID, $products)) {
+            if (!in_array($productID, $products))
+            {
                 $products[] = $productID;
-                $products = base64_encode(serialize($products));
-
-                setcookie('compare', $products,
-                    [
-                        'expires' => 0,
-                        'path' => '/',
-                        'httponly' => true,
-                    ]
-                );
+                Cookie::set('compare',$products,0);
             }
         }
 
         //else the user is adding their first product and cookie must be set
         else
         {
-            $products[] = $productID;
-            $products = base64_encode(serialize($products));
-
-            setcookie('compare',$products,
-                [
-                    'expires' => 0,
-                    'path' => '/',
-                    'httponly' => true,
-                ]
-            );
+            Cookie::set('compare',[$productID],0);
         }
     }
 
     /**
+     * Removes the product from compare
+     *
      * @param int $productID
      * @return void
      */
     public static function removeCompare(int $productID): void
     {
         //if user already has seen some products and cookie's been set
-        if (isset($_COOKIE['compare']))
+        if (Cookie::exists('compare'))
         {
             $products = self::getCompare();
 
@@ -137,39 +135,34 @@ class UserUtils
             if(in_array($productID,$products))
             {
                 unset($products[$productID]);
-                $products = base64_encode(serialize($products));
-
-                setcookie('compare',$products,
-                    [
-                        'expires' => 0,
-                        'path' => '/',
-                        'httponly' => true,
-                    ]
-                );
+                Cookie::set('compare',$products,0);
             }
         }
     }
 
     /**
+     * Returns array of product ids added for compare
+     *
      * @return array|mixed
      */
     public static function getCompare(): mixed
     {
         $compare = [];
 
-        if (isset($_COOKIE['compare']))
-            $compare = unserialize(base64_decode($_COOKIE['compare']));
+        if (Cookie::exists('compare'))
+            $compare = Cookie::get('compare');
 
         return $compare;
     }
 
     /**
+     * Checks if the product has been recently visited by user
      * @param int $productID
      * @return bool
      */
     public static function hasRecentVisits(int $productID): bool
     {
-        if(isset($_COOKIE['recent-visits']))
+        if(Cookie::exists('recent-visits'))
         {
             $recentVisits = self::getRecentVisits();
 
@@ -180,6 +173,8 @@ class UserUtils
     }
 
     /**
+     * Adds the product to user's recently seen products
+     *
      * @param int $productID
      * @return void
      */
@@ -188,7 +183,7 @@ class UserUtils
         $recentVisits = [];
 
         //if user already has seen some products and cookie's been set
-        if (isset($_COOKIE['recent-visits']))
+        if (Cookie::exists('recent-visits'))
         {
             $recentVisits = self::getRecentVisits();
 
@@ -196,15 +191,8 @@ class UserUtils
             if(!in_array($productID,$recentVisits))
             {
                 $recentVisits[] = $productID;
-                $recentVisits = base64_encode(serialize($recentVisits));
-
-                setcookie('recent-visits',$recentVisits,
-                    [
-                        'expires' => time()+60*60*24*30,
-                        'path' => '/',
-                        'httponly' => true,
-                    ]
-                );
+                //adds the cookie for a month
+                Cookie::set('recent-visits',$recentVisits,time()+60*60*24*30);
             }
         }
 
@@ -212,26 +200,20 @@ class UserUtils
         else
         {
             $recentVisits[] = $productID;
-            $recentVisits = base64_encode(serialize($recentVisits));
-
-            setcookie('recent-visits',$recentVisits,
-                [
-                    'expires' => time()+60*60*24*30,
-                    'path' => '/',
-                    'httponly' => true,
-                ]
-            );
+            Cookie::set('recent-visits',$recentVisits,time()+60*60*24*30);
         }
     }
 
     /**
+     * Removes a product from user's recently seen products
+     *
      * @param int $productID
      * @return void
      */
     public static function removeRecentVisits(int $productID): void
     {
         //if user already has seen some products and cookie's been set
-        if (isset($_COOKIE['recent-visits']))
+        if (Cookie::exists('recent-visits'))
         {
             $recentVisits = self::getRecentVisits();
 
@@ -239,28 +221,22 @@ class UserUtils
             if(in_array($productID,$recentVisits))
             {
                 unset($recentVisits[$productID]);
-                $recentVisits = base64_encode(serialize($recentVisits));
-
-                setcookie('recent-visits',$recentVisits,
-                    [
-                        'expires' => time()+60*60*24*30,
-                        'path' => '/',
-                        'httponly' => true,
-                    ]
-                );
+                Cookie::set('recent-visits',$recentVisits,time()+60*60*24*30);
             }
         }
     }
 
     /**
+     * Returns all user's recently seen products
+     *
      * @return array|mixed
      */
     public static function getRecentVisits(): mixed
     {
         $recentVisits = [];
 
-        if (isset($_COOKIE['recent-visits']))
-            $recentVisits = unserialize(base64_decode($_COOKIE['recent-visits']));
+        if (Cookie::exists('recent-visits'))
+            $recentVisits = Cookie::get('recent-visits');
 
         return $recentVisits;
     }

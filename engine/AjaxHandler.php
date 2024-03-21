@@ -2,9 +2,9 @@
 
 namespace engine;
 
-use engine\utils\TermUtils;
-use engine\utils\UserUtils;
-use engine\utils\WcUtils;
+use engine\utils\Term;
+use engine\utils\User;
+use engine\utils\Woocommerce;
 use WP_Query;
 
 defined('ABSPATH') || exit;
@@ -480,7 +480,7 @@ class AjaxHandler
         $ancestors = '';
 
         if($cats)
-            $ancestors = TermUtils::getTermAncestors(end($cats),true); //var_dump
+            $ancestors = Term::getTermAncestors(end($cats),true); //var_dump
         ?>
         <div class="pt-[30px] pb-4 px-3 flex flex-col items-center justify-center w-1/4 bg-white rounded-lg">
             <span class="remove-from-compare cursor-pointer flex items-center rounded-[5px] justify-center bg-[#F85A3E0F] p-1 mb-2.5"
@@ -512,10 +512,10 @@ class AjaxHandler
                 <span class="text-[var(--title)] text-sm font-bold">
                     <?php
                     if ($product->is_on_sale())
-                        echo WcUtils::getSalePrice($product).' تومان';
+                        echo Woocommerce::getSalePrice($product).' تومان';
 
                     else
-                        echo WcUtils::getRegularPrice($product).' تومان';
+                        echo Woocommerce::getRegularPrice($product).' تومان';
                     ?>
                 </span>
             </div>
@@ -527,7 +527,7 @@ class AjaxHandler
                     </span>
                 </a>
                 <div class="flex items-center justify-center space-x-[3px] space-x-reverse">
-                    <span class="add-user-favorites cursor-pointer <?php echo UserUtils::hasFavorited($product) ? 'added' : '' ?> w-8 h-[29px] rounded-[4px] bg-[var(--theme-secondary-bg)] flex items-center justify-center"
+                    <span class="add-user-favorites cursor-pointer <?php echo User::hasFavorited($product) ? 'added' : '' ?> w-8 h-[29px] rounded-[4px] bg-[var(--theme-secondary-bg)] flex items-center justify-center"
                           data-product-id="<?php echo get_the_ID() ?>">
                         <svg xmlns="http://www.w3.org/2000/svg" width="34" height="30" viewBox="0 0 34 30" fill="none">
                           <rect x="0.522949" width="32.6216" height="29.656" rx="3.77677" fill="var(--theme-secondary)" fill-opacity="0.1"/>

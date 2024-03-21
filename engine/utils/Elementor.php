@@ -6,9 +6,15 @@ use Elementor\Plugin;
 
 defined('ABSPATH') || exit;
 
-class ElementorUtils
+class Elementor
 {
-    public static function getTemplates($limit=-1): array
+    /**
+     * Returns all elementor templates and pages
+     *
+     * @param int $limit
+     * @return string[]
+     */
+    public static function getTemplates(int $limit = -1): array
     {
         $templates = get_posts(
             [
@@ -18,27 +24,7 @@ class ElementorUtils
         );
 
         $choices = array(
-            '0' => 'پیش فرض',
-        );
-
-        if (!empty($templates) && !is_wp_error($templates)) 
-            foreach ($templates as $template)
-                $choices[$template->ID] = $template->post_title;
-
-        return $choices;
-    }
-
-    public static function getPages(): array
-    {
-        $templates = get_posts(
-            [
-                'post_type' => 'page',
-                'posts_per_page' => -1,
-            ]
-        );
-
-        $choices = array(
-            '0' => 'پیش فرض',
+            '0' => 'انتخاب کنید',
         );
 
         if (!empty($templates) && !is_wp_error($templates)) 
@@ -55,10 +41,10 @@ class ElementorUtils
      */
     public static function isEditor(): bool
     {
-        return (isset($_GET['action']) && $_GET['action'] == 'elementor') ||
+        return ((isset($_GET['action']) && $_GET['action'] == 'elementor') ||
                (isset($_GET['post_type']) && $_GET['post_type'] == 'elementor_library') ||
                (isset($_GET['elementor_library']) && isset($_GET['elementor-preview'])) ||
-                Plugin::$instance->editor->is_edit_mode();
+                Plugin::$instance->editor->is_edit_mode());
     }
 
     /**
@@ -74,9 +60,16 @@ class ElementorUtils
                 Plugin::$instance->preview->is_preview_mode());
 	}
 
-    public static function printTemplate($id)
+    /**
+     * Prints the content of an elementor template
+     *
+     * @param int $id
+     * @param bool $withCss Optional. Whether to retrieve the content with CSS or not. Default is false
+     * @return string|void
+     */
+    public static function printTemplate(int $id,bool $withCss = false)
     {
-        $content = Plugin::$instance->frontend->get_builder_content_for_display($id);
+        $content = Plugin::$instance->frontend->get_builder_content_for_display($id,$withCss);
 
         if (empty($content)) 
             return 'empty';
@@ -84,9 +77,16 @@ class ElementorUtils
         echo $content;
     }
 
-    public static function getTemplate($id): string
+    /**
+     * Returns the content of an elementor template
+     *
+     * @param int $id
+     * @param bool $withCss Optional. Whether to retrieve the content with CSS or not. Default is false
+     * @return string
+     */
+    public static function getTemplate(int $id,bool $withCss = false): string
     {
-        $content = Plugin::$instance->frontend->get_builder_content_for_display($id);
+        $content = Plugin::$instance->frontend->get_builder_content_for_display($id,$withCss);
 
         if (empty($content))
             return 'empty';

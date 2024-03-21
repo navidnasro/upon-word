@@ -6,13 +6,19 @@ defined('ABSPATH') || exit;
 
 class Loader
 {
+    /**
+     * Loads files by their importance and requirements
+     *
+     * @return void
+     */
     public static function load(): void
     {
         require_once 'enums/Loader.php';
         require_once 'security/Loader.php';
-        require_once 'utils/Loader.php';
-        require_once 'ThemeInitializer.php';
         require_once 'database/Loader.php';
+        require_once 'utils/Loader.php';
+        require_once 'woocommerce/Loader.php';
+        require_once 'ThemeInitializer.php';
 
         if (is_admin())
         {
@@ -23,7 +29,6 @@ class Loader
         else
         {
             require_once 'AjaxHandler.php';
-            require_once 'woocommerce/Loader.php';
         }
 
         require_once 'walkers/Loader.php';

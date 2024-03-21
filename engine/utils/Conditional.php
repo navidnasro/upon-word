@@ -4,7 +4,7 @@ namespace engine\utils;
 
 defined('ABSPATH') || exit;
 
-class ConditionalUtils
+class Conditional
 {
     /**
      * Checks if the viewing admin page is the passed one

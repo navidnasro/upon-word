@@ -8,16 +8,13 @@ defined('ABSPATH') || exit;
 
 class ProductVariations
 {
-    private $variations;
-    private $variants;
+    private array $variations;
+    private array $variants;
 
-    /**
-     * @param WC_Product $product
-     */
-    function __construct($product)
+    function __construct(WC_Product $product)
     {
         $this->variations = $product->get_available_variations();
-        $this->variants = array();
+        $this->variants = [];
         
         $this->generateVariants();
     }

@@ -6,22 +6,25 @@ use WP_Query;
 
 defined('ABSPATH') || exit;
 
-class PostUtils
+class Post
 {
     /**
+     * Returns created posts
+     *
+     * @param int $limit
      * @return string[]
      */
-    public static function getPosts(): array
+    public static function getPosts(int $limit = -1): array
     {
         $templates = get_posts(
             [
                 'post_type' => 'post',
-                'posts_per_page' => -1,
+                'posts_per_page' => $limit,
             ]
         );
 
         $choices = array(
-            '0' => 'هیچ کدام',
+            '0' => 'انتخاب کنید',
         );
 
         if (!empty($templates) && !is_wp_error($templates))
@@ -32,6 +35,8 @@ class PostUtils
     }
 
     /**
+     * Retrieves categories
+     *
      * @param bool $hide
      * @param bool $addDefault
      * @param bool $rootCats
@@ -52,7 +57,7 @@ class PostUtils
         $options = [];
 
         if($addDefault)
-            $options[0] = 'هیچ کدام';
+            $options[0] = 'انتخاب کنید';
 
         if(!empty($terms) && !is_wp_error($terms))
             foreach($terms as $term)
@@ -63,6 +68,7 @@ class PostUtils
 
     /**
      * Retrieves posts with a specific post format
+     *
      * @param string $postFormat
      * @return array
      */

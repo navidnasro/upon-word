@@ -2,45 +2,55 @@
 
 namespace engine\utils;
 
+use engine\database\enums\Table;
+use engine\database\QueryBuilder;
 use WP_Term;
 
 defined('ABSPATH') || exit;
 
-class TermUtils
+class Term
 {
     /**
+     * Returns number of items in a term(category)
+     *
      * @param WP_Term $term
-     * @return void
+     * @param string $label
+     * @param bool $withPlus
+     * @return string
      */
-    public static function getTermCountPlus(WP_Term $term) : void
+    public static function getTermCountPlus(WP_Term $term,string $label = '',bool $withPlus = true): string
     {
         $count = $term->count;
 
-        if( strlen( $count ) > 1 )
+        if(strlen($count) > 10)
         {
-            //Last digit
-            $number = substr($count,0,1);
-            for( $i=1 ; $i<=strlen($count)-1 ; $i++ )
-                $number.='0';
+            /**
+             * intval($count/10) => removing most right digit
+             * *10 => nearest multiple of 10
+             */
+            $number = intval($count/10)*10;
 
-            echo $number.'+'.' محصول';
+            return $withPlus ? $number.'+ '.$label : $number.' '.$label;
         }
+
         else
-            echo $count.' محصول';
+            return $count.' '.$label;
     }
 
     /**
      * @param WP_Term|int $term
+     * @param string $objectType The type of object for which we'll be retrieving ancestors. like product_cat
+     * @param string $resourceType Type of resource $objectType is. like taxonomy
      * @param bool $getText
      * @param string $separator
      * @return array|string
      */
-    public static function getTermAncestors(WP_Term|int $term, bool $getText = false, string $separator = '/'): array|string
+    public static function getTermAncestors(WP_Term|int $term,string $objectType,string $resourceType,bool $getText = false, string $separator = '/'): array|string
     {
         if (is_numeric($term))
             $term = get_term($term);
 
-        $parents = get_ancestors($term->term_id,'product_cat','taxonomy'); //array of IDs of ancestors from lowest to highest
+        $parents = get_ancestors($term->term_id,$objectType,$resourceType); //array of IDs of ancestors from lowest to highest
 
         //if output is desired as text
         if($getText)
@@ -81,19 +91,20 @@ class TermUtils
      */
     public static function getDirectChildren(WP_Term|int $term): array
     {
-        global $wpdb;
-
-        $childern = [];
+        $builder = new QueryBuilder();
 
         if(is_numeric($term))
             $term = get_term($term);
 
-        $childern = $wpdb->get_col(
-            'SELECT term_id 
-                    FROM `wp_term_taxonomy` 
-                    WHERE parent="'.$term->term_id.'"',
-        );
+//        $childern = $wpdb->get_col(
+//            'SELECT term_id
+//                    FROM `wp_term_taxonomy`
+//                    WHERE parent="'.$term->term_id.'"',
+//        );
 
-        return $childern;
+        return $builder->select('term_id')
+            ->from(Table::TERM_TAXONOMY)
+            ->where('parent','=',$term->term_id)
+            ->getColumn();
     }
 }

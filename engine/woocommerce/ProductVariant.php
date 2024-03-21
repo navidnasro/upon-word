@@ -6,19 +6,19 @@ defined('ABSPATH') || exit;
 
 class ProductVariant
 {
-    private $variant;
+    private array $variant;
 
-    private $ID;
+    private int $ID;
 
-    private $description;
-    private $dimentions;
-    private $attributeName;
-    private $regularPrice;
-    private $displayPrice;
-    private $image;
-    private $imageID;
-    private $isInStock;
-    private $salePercentage;
+    private string $description;
+    private array $dimensions;
+    private string $attributeName;
+    private float $regularPrice;
+    private float $displayPrice;
+    private array $image;
+    private int $imageID;
+    private bool $isInStock;
+    private int $salePercentage;
 
     function __construct($variant)
     {
@@ -32,7 +32,7 @@ class ProductVariant
         $this->setIsInStock();
         $this->setID();
         $this->setDescription();
-        $this->setDimentions();
+        $this->setDimensions();
         $this->setSalePercentage();
     }
 
@@ -111,13 +111,13 @@ class ProductVariant
             $this->description = $value;
     }
 
-    public function setDimentions($value = null): void
+    public function setDimensions($value = null): void
     {
         if(is_null($value))
-            $this->dimentions = $this->variant['dimensions'];
+            $this->dimensions = $this->variant['dimensions'];
 
         else
-            $this->dimentions = $value;
+            $this->dimensions = $value;
     }
 
     public function setSalePercentage($value = null): void
@@ -129,52 +129,52 @@ class ProductVariant
             $this->salePercentage = $value;
     }
 
-    public function getSalePercentage()
+    public function getSalePercentage(): int
     {
         return $this->salePercentage;
     }
 
-    public function getDimentions()
+    public function getDimensions(): array
     {
-        return $this->dimentions;
+        return $this->dimensions;
     }
 
-    public function getDescription()
+    public function getDescription(): string
     {
         return $this->description;
     }
 
-    public function getID()
+    public function getID(): int
     {
         return $this->ID;
     }
 
-    public function getAttributeName()
+    public function getAttributeName(): string
     {
         return $this->attributeName;
     }
 
-    public function getRegularPrice()
+    public function getRegularPrice(): float
     {
         return $this->regularPrice;
     }
 
-    public function getDisplayPrice()
+    public function getDisplayPrice(): float
     {
         return $this->displayPrice;
     }
 
-    public function getImage()
+    public function getImage(): array
     {
         return $this->image;
     }
 
-    public function getImageID()
+    public function getImageID(): int
     {
         return $this->imageID;
     }
 
-    public function getIsInStock()
+    public function getIsInStock(): bool
     {
         return $this->isInStock;
     }

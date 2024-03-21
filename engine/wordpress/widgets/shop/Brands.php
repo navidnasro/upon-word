@@ -2,7 +2,7 @@
 
 namespace engine\wordpress\widgets\shop;
 
-use engine\utils\WcUtils;
+use engine\utils\Woocommerce;
 use engine\wordpress\widgets\Register;
 use WP_Widget;
 
@@ -33,7 +33,7 @@ class Brands extends WP_Widget
     {
         $terms = [];
 
-        $brands = WcUtils::getBrands();
+        $brands = Woocommerce::getBrands();
 
         if (!empty($brands))
             foreach ($brands as $brandName)
@@ -66,7 +66,7 @@ class Brands extends WP_Widget
         echo $instance['stock-title'];
         echo $args['after_title'];
 
-        $brands = WcUtils::getBrands();
+        $brands = Woocommerce::getBrands();
 
         if (!empty($brands))
         {

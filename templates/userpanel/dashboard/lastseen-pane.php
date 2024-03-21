@@ -1,16 +1,16 @@
 <?php
 
-use engine\utils\TermUtils;
-use engine\utils\UserUtils;
-use engine\utils\WcUtils;
+use engine\utils\Term;
+use engine\utils\User;
+use engine\utils\Woocommerce;
 
 defined('ABSPATH') || exit;
 
 global $ribar_options;
 
-$recentVisits = UserUtils::getRecentVisits();
+$recentVisits = User::getRecentVisits();
 
-$compares = UserUtils::getCompare();
+$compares = User::getCompare();
 $pageID = $ribar_options['compare-page-elementor'];
 ?>
 
@@ -58,7 +58,7 @@ $pageID = $ribar_options['compare-page-elementor'];
                     $ancestors = '';
 
                     if($cats)
-                        $ancestors = TermUtils::getTermAncestors(end($cats),true); //var_dump
+                        $ancestors = Term::getTermAncestors(end($cats),true); //var_dump
                     ?>
                     <div class="pt-[30px] pb-4 px-3 flex flex-col items-center m-1 justify-center flex-1 bg-white rounded-lg">
                         <img class="mb-[15px] w-[300px] h-[300px]" src="<?php echo $image ?>">
@@ -84,10 +84,10 @@ $pageID = $ribar_options['compare-page-elementor'];
                             <span class="text-[var(--title)] text-sm font-bold">
                             <?php
                             if ($product->is_on_sale())
-                                echo WcUtils::getSalePrice($product).' تومان';
+                                echo Woocommerce::getSalePrice($product).' تومان';
 
                             else
-                                echo WcUtils::getRegularPrice($product).' تومان';
+                                echo Woocommerce::getRegularPrice($product).' تومان';
                             ?>
                         </span>
                         </div>
@@ -107,7 +107,7 @@ $pageID = $ribar_options['compare-page-elementor'];
                                   <path d="M18.875 17.5217L22.0243 12.2318C22.0537 12.2373 22.0837 12.2406 22.115 12.2406C22.1459 12.2406 22.1763 12.2373 22.2058 12.2318L25.3546 17.5217H18.875ZM7.45671 14.1248L10.606 8.83538C10.6355 8.84091 10.6659 8.84413 10.6967 8.84413C10.7276 8.84413 10.758 8.84091 10.7875 8.83538L13.9363 14.1248H7.45671ZM25.7813 17.6779C25.7818 17.6502 25.7751 17.6221 25.7604 17.5973L22.4766 12.0817C22.5517 11.9992 22.5973 11.891 22.5973 11.7726C22.5973 11.5142 22.3816 11.3046 22.115 11.3046C21.9464 11.3046 21.7981 11.3885 21.7121 11.5151L17.106 10.0942C17.1079 10.0753 17.1089 10.0564 17.1089 10.0371C17.1089 9.66031 16.7943 9.35493 16.4057 9.35493C16.1476 9.35493 15.9224 9.49035 15.8003 9.69163L11.1638 8.26148C11.1111 8.05836 10.9224 7.9082 10.6967 7.9082C10.4302 7.9082 10.214 8.11777 10.214 8.37617C10.214 8.49454 10.2596 8.60278 10.3347 8.68523L7.05094 14.2008C7.03621 14.2257 7.02955 14.2538 7.0305 14.2815H7.03003C7.03003 15.6328 8.67167 16.7286 10.6967 16.7286C12.7214 16.7286 14.363 15.6328 14.363 14.2815H14.3625C14.3639 14.2538 14.3568 14.2257 14.3421 14.2008L11.0583 8.68523C11.0892 8.65068 11.1154 8.61245 11.1353 8.57054L15.7053 9.97996C15.7039 9.99884 15.7024 10.0182 15.7024 10.0371C15.7024 10.2586 15.8112 10.4548 15.9799 10.5792V21.2926H13.8128V22.1185H18.9985V21.2926H16.8314V10.5792C16.9041 10.5258 16.9649 10.4594 17.0115 10.383L21.6342 11.809C21.6423 11.9131 21.686 12.0075 21.753 12.0817L18.4692 17.5973C18.4545 17.6221 18.4478 17.6502 18.4488 17.6779H18.4483C18.4483 19.0297 20.09 20.125 22.115 20.125C24.1396 20.125 25.7813 19.0297 25.7813 17.6779Z" fill="var(--theme-secondary)"/>
                                 </svg>
                             </span>
-                                <span class="add-user-favorites cursor-pointer <?php echo UserUtils::hasFavorited($product) ? 'added' : '' ?> w-8 h-[29px] rounded-[4px] bg-[var(--theme-secondary-bg)] flex items-center justify-center"
+                                <span class="add-user-favorites cursor-pointer <?php echo User::hasFavorited($product) ? 'added' : '' ?> w-8 h-[29px] rounded-[4px] bg-[var(--theme-secondary-bg)] flex items-center justify-center"
                                       data-product-id="<?php echo get_the_ID() ?>">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="34" height="30" viewBox="0 0 34 30" fill="none">
                                   <rect x="0.522949" width="32.6216" height="29.656" rx="3.77677" fill="var(--theme-secondary)" fill-opacity="0.1"/>

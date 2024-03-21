@@ -4,9 +4,15 @@ namespace engine\utils;
 
 defined('ABSPATH') || exit;
 
-class LabelUtils
+class Label
 {
-    public static function getLabel($singular): array
+    /**
+     * Generates the label array
+     *
+     * @param string $singular
+     * @return string[]
+     */
+    public static function getLabel(string $singular): array
     {
         $plural = $singular.' ها ';
         $subjectPlural = $singular.' های ';
