@@ -179,7 +179,6 @@ class QueryBuilder
 
     public function getVar(int $column = 0,int $row = 0): ?string
     {
-        var_dump($this->query);exit;
         global $wpdb;
 
         return $wpdb->get_var($wpdb->prepare($this->query),$column,$row);

@@ -3,11 +3,31 @@
 namespace engine\utils;
 
 use engine\security\Escape;
+use WP_Query;
 
 defined('ABSPATH') || exit;
 
 class Query
 {
+    /**
+     * Returns number of published posts in a specified post type
+     *
+     * @param string $postType
+     * @return int
+     */
+    public static function getPostTypeCount(string $postType): int
+    {
+        $query = new WP_Query(
+            [
+                'post_type' => $postType,
+                'post_status' => 'publish',
+                'posts_per_page' => -1,
+            ]
+        );
+
+        return $query->found_posts;
+    }
+
     /**
      * Generates query parameters with appropriate filters
      *

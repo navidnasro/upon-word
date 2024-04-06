@@ -22,7 +22,7 @@ class Term
     {
         $count = $term->count;
 
-        if(strlen($count) > 10)
+        if(strlen($count) > 1)
         {
             /**
              * intval($count/10) => removing most right digit
@@ -73,16 +73,17 @@ class Term
 
     /**
      * @param WP_Term|int $term
+     * @param array|string $size
      * @param string $metaKey
      * @return false|string
      */
-    public static function getThumbnailUrl(WP_Term|int $term,string $metaKey = 'thumbnail_id'): bool|string
+    public static function getThumbnailUrl(WP_Term|int $term,array|string $size = 'thumbnail',string $metaKey = 'thumbnail_id'): bool|string
     {
         if (!is_numeric($term))
             $term = $term->term_id;
 
         $thumbnail_id = get_term_meta($term,$metaKey,true);
-        return wp_get_attachment_url($thumbnail_id);
+        return wp_get_attachment_image_url($thumbnail_id,$size);
     }
 
     /**

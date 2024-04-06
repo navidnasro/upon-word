@@ -3,6 +3,7 @@
 namespace engine\elementor;
 
 use Elementor\Controls_Manager;
+use Elementor\Group_Control_Background;
 use Elementor\Group_Control_Border;
 use Elementor\Group_Control_Box_Shadow;
 use Elementor\Group_Control_Typography;
@@ -32,39 +33,45 @@ class WidgetControls
     /**
      * @param string $id
      * @param string $label
+     * @param array $params
      * @return void
      */
-    public function startContentSection(string $id,string $label): void
+    public function startContentSection(string $id,string $label,array $params = []): void
     {
 //        if (empty($id))
 //            $id = substr(str_shuffle(self::characters),0,7);
 
-        $this->widget->start_controls_section(
-            $id,
-            [
-                'label' => Escape::htmlWithTranslation($label),
-                'tab' => Controls_Manager::TAB_CONTENT
-            ]
-        );
+        $defaults = [
+            'label' => Escape::htmlWithTranslation($label),
+            'tab' => Controls_Manager::TAB_CONTENT
+        ];
+
+        if (!empty($params))
+            $defaults = wp_parse_args($params,$defaults);
+
+        $this->widget->start_controls_section($id,$defaults);
     }
 
     /**
      * @param string $id
      * @param string $label
+     * @param array $params
      * @return void
      */
-    public function startStyleSection(string $id,string $label): void
+    public function startStyleSection(string $id,string $label,array $params = []): void
     {
 //        if (empty($id))
 //            $id = substr(str_shuffle(self::characters),0,7);
 
-        $this->widget->start_controls_section(
-            $id,
-            [
-                'label' => Escape::htmlWithTranslation($label),
-                'tab' => Controls_Manager::TAB_STYLE
-            ]
-        );
+        $defaults = [
+            'label' => Escape::htmlWithTranslation($label),
+            'tab' => Controls_Manager::TAB_STYLE
+        ];
+
+        if (!empty($params))
+            $defaults = wp_parse_args($params,$defaults);
+
+        $this->widget->start_controls_section($id,$defaults);
     }
 
     /**
@@ -89,6 +96,24 @@ class WidgetControls
             'type' => Controls_Manager::TEXT,
             'default' => Escape::htmlWithTranslation($defaultValue),
             'placeholder' => Escape::htmlWithTranslation($label.' را وارد کنید'),
+        ];
+
+        return $this->createControl($id,$defaults,$params);
+    }
+
+    /**
+     * @param string $id
+     * @param string $label
+     * @param string $separator
+     * @param array $params
+     * @return string
+     */
+    public function addHeading(string $id,string $label,string $separator = 'default',array $params = []): string
+    {
+        $defaults = [
+            'label' => Escape::htmlWithTranslation($label),
+            'type' => Controls_Manager::HEADING,
+            'separator' => $separator,
         ];
 
         return $this->createControl($id,$defaults,$params);
@@ -122,7 +147,6 @@ class WidgetControls
      * @param string $id
      * @param string $label
      * @param int $rows
-     * @param string $defaultValue
      * @param array $params
      * @return string
      */
@@ -189,15 +213,17 @@ class WidgetControls
      * @param array $params
      * @return string
      */
-    public function addSelectControl(string $id,string $label,array $options,string $defaultValue,array $css,array $params = []): string
+    public function addSelectControl(string $id,string $label,array $options,string $defaultValue = '',array $css = [],array $params = []): string
     {
         $defaults = [
             'label' => Escape::htmlWithTranslation($label),
             'type' => Controls_Manager::SELECT,
-            'default' => $defaultValue,
             'options' => $options,
             'selectors' => $css,
         ];
+
+        if (!empty($defaultValue))
+            $defaults['default'] = $defaultValue;
 
         return $this->createControl($id,$defaults,$params);
     }
@@ -236,7 +262,7 @@ class WidgetControls
      * @param array $params
      * @return string
      */
-    public function addChooseControl(string $id,string $label,array $options,string $defaultValue,bool $toggle,array $css,array $params = []): string
+    public function addChooseControl(string $id,string $label,array $options,string $defaultValue,bool $toggle,array $css = [],array $params = []): string
     {
         $defaults = [
             'label' => Escape::htmlWithTranslation($label),
@@ -257,14 +283,14 @@ class WidgetControls
      * @param array $params
      * @return string
      */
-    public function addColorControl(string $id,string $label,array $css,array $params = []): string
+    public function addColorControl(string $id,string $label,array $css = [],array $params = []): string
     {
         $defaults = [
             'label' => Escape::htmlWithTranslation($label),
             'type' => Controls_Manager::COLOR,
             'selectors' => $css,
         ];
-        
+
         return $this->createControl($id,$defaults,$params);
     }
 
@@ -292,12 +318,19 @@ class WidgetControls
      * @param array $params
      * @return string
      */
-    public function addUrlControl(string $id,string $label,array $options,array $params = []): string
+    public function addUrlControl(string $id,string $label,array $options = [],array $params = []): string
     {
+        $linkOptions = [
+            'url',
+            'is_external',
+            'nofollow',
+            'custom_attributes'
+        ];
+
         $defaults = [
             'label' => Escape::htmlWithTranslation($label),
             'type' => Controls_Manager::URL,
-            'options' => $options,
+            'options' => empty($options) ? $linkOptions : $options,
             'label_block' => true,
         ];
 
@@ -349,7 +382,7 @@ class WidgetControls
      * @param array $params
      * @return string
      */
-    public function addSliderControl(string $id,string $label,array $defaultValues,array $css,array $params = []): string
+    public function addSliderControl(string $id,string $label,array $defaultValues = [],array $css = [],array $params = []): string
     {
         $defaults = [
             'label' => Escape::htmlWithTranslation($label),
@@ -362,9 +395,11 @@ class WidgetControls
                     'step' => 1,
                 ],
             ],
-            'default' => $defaultValues,
             'selectors' => $css,
         ];
+
+        if (!empty($defaultValues))
+            $defaults['default'] = $defaultValues;
 
         return $this->createControl($id,$defaults,$params);
     }
@@ -376,7 +411,7 @@ class WidgetControls
      * @param array $params
      * @return string
      */
-    public function addDimensionsControl(string $id,string $label,array $css,array $params = []): string
+    public function addDimensionsControl(string $id,string $label,array $css = [],array $params = []): string
     {
         $defaults = [
             'label' => Escape::htmlWithTranslation($label),
@@ -390,28 +425,24 @@ class WidgetControls
 
     /**
      * @param string $id
-     * @param string $cssSelector
-     * @return void
+     * @return string
      */
-    public function addTypographyControl(string $id,string $cssSelector): void
+    public function addDivider(string $id): string
     {
-//        if (empty($id))
-//            $id = substr(str_shuffle(self::characters),0,7);
-
         $defaults = [
-            'name' => $id,
-            'selector' => '{{WRAPPER}} '.$cssSelector,
+            'type' => Controls_Manager::DIVIDER,
         ];
 
-        $this->createGroupControl(Group_Control_Typography::get_type(),$defaults);
+        return $this->createControl($id,$defaults);
     }
 
     /**
      * @param string $id
      * @param string $cssSelector
+     * @param array $params
      * @return void
      */
-    public function addBorderControl(string $id,string $cssSelector): void
+    public function addTypographyControl(string $id,string $cssSelector,array $params = []): void
     {
 //        if (empty($id))
 //            $id = substr(str_shuffle(self::characters),0,7);
@@ -421,15 +452,16 @@ class WidgetControls
             'selector' => '{{WRAPPER}} '.$cssSelector,
         ];
 
-        $this->createGroupControl(Group_Control_Border::get_type(),$defaults);
+        $this->createGroupControl(Group_Control_Typography::get_type(),wp_parse_args($params,$defaults));
     }
 
     /**
      * @param string $id
      * @param string $cssSelector
+     * @param array $params
      * @return void
      */
-    public function addBoxShadow(string $id,string $cssSelector): void
+    public function addBorderControl(string $id,string $cssSelector,array $params = []): void
     {
 //        if (empty($id))
 //            $id = substr(str_shuffle(self::characters),0,7);
@@ -439,7 +471,47 @@ class WidgetControls
             'selector' => '{{WRAPPER}} '.$cssSelector,
         ];
 
-        $this->createGroupControl(Group_Control_Box_Shadow::get_type(),$defaults);
+        $this->createGroupControl(Group_Control_Border::get_type(),wp_parse_args($params,$defaults));
+    }
+
+    /**
+     * @param string $id
+     * @param string $cssSelector
+     * @param array $params
+     * @return void
+     */
+    public function addBoxShadow(string $id,string $cssSelector,array $params = []): void
+    {
+//        if (empty($id))
+//            $id = substr(str_shuffle(self::characters),0,7);
+
+        $defaults = [
+            'name' => $id,
+            'selector' => '{{WRAPPER}} '.$cssSelector,
+        ];
+
+        $this->createGroupControl(Group_Control_Box_Shadow::get_type(),wp_parse_args($params,$defaults));
+    }
+
+    /**
+     * @param string $id
+     * @param string $cssSelector
+     * @param array $types
+     * @param array $params
+     * @return void
+     */
+    public function addBackground(string $id,string $cssSelector,array $types = [],array $params = []): void
+    {
+        $defaults = [
+            'name' => $id,
+            'types' => ['classic','gradient','video'],
+            'selector' => '{{WRAPPER}} '.$cssSelector,
+        ];
+
+        if (!empty($types))
+            $defaults['types'] = $types;
+
+        $this->createGroupControl(Group_Control_Background::get_type(),wp_parse_args($params,$defaults));
     }
 
     /**

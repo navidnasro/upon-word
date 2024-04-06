@@ -3,6 +3,7 @@
 namespace engine\utils;
 
 use Elementor\Plugin;
+use Elementor\Widget_Base;
 
 defined('ABSPATH') || exit;
 
@@ -92,5 +93,22 @@ class Elementor
             return 'empty';
 
         return $content;
+    }
+
+    /**
+     * Returns url attributes of a url control
+     *
+     * @param Widget_Base $widget
+     * @param string $controlID
+     * @param array $controlSettings
+     * @return string
+     */
+    public static function getUrlAttributes(Widget_Base $widget,string $controlID,array $controlSettings): string
+    {
+        // adding attributes to the link
+        $widget->add_link_attributes($controlID,$controlSettings);
+
+        // returning link attributes
+        return $widget->get_render_attribute_string($controlID);
     }
 }

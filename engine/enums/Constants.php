@@ -12,4 +12,5 @@ enum Constants
     const Templates = THEME_ROOT.'/templates'; // path to templates folder
     const TextDomain = 'engine'; // text domain name
     const Settings = 'redux'; // settings framework that engine should use
+    const SettingsObjectID = 'themeSettings'; // object name that is used by the settings framework
 }

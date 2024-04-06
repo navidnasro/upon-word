@@ -26,10 +26,7 @@ class Loader
             require_once 'settings/Loader.php';
         }
 
-        else
-        {
-            require_once 'AjaxHandler.php';
-        }
+        require_once 'AjaxHandler.php';
 
         require_once 'walkers/Loader.php';
         require_once 'elementor/Loader.php';

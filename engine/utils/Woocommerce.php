@@ -3,8 +3,10 @@
 namespace engine\utils;
 
 use DivisionByZeroError;
+use engine\database\enums\OutputType;
 use engine\database\enums\Table;
 use engine\database\QueryBuilder;
+use engine\security\Escape;
 use engine\woocommerce\ProductVariations;
 use WC_Product;
 use WC_Product_Attribute;
@@ -17,9 +19,11 @@ class Woocommerce
      * Prints sale percentage
      *
      * @param WC_Product $product
+     * @param bool $range
+     * @param bool $max
      * @return void
      */
-    public static function printSalePercentage(WC_Product $product): void
+    public static function printSalePercentage(WC_Product $product,bool $range = false,bool $max = false): void
     {
         if($product->is_type('simple'))
         {
@@ -34,9 +38,22 @@ class Woocommerce
         {
             // "sale_percentage" is also the max sale percentage
             $max = get_post_meta($product->get_id(),'sale_percentage',true);
-            $min = get_post_meta($product->get_id(),'min_sale_percentage',true);
 
-            echo $min.'% - '.$max.'%';
+            if ($range)
+            {
+                $min = get_post_meta($product->get_id(),'min_sale_percentage',true);
+
+                echo $min.'% - '.$max.'%';
+            }
+
+            elseif ($max)
+                echo $max.'%';
+
+            else
+            {
+                $variations = new ProductVariations($product);
+                echo '%'.$variations->getFirstVariant()->getSalePercentage();
+            }
         }
 
         echo '0%';
@@ -46,9 +63,11 @@ class Woocommerce
      * Returns sale percentage
      *
      * @param WC_Product $product
+     * @param bool $range
+     * @param bool $max
      * @return float|int|mixed
      */
-    public static function getSalePercentage(WC_Product $product): mixed
+    public static function getSalePercentage(WC_Product $product,bool $range = false,bool $max = false): mixed
     {
         if($product->is_type('simple'))
         {
@@ -62,7 +81,23 @@ class Woocommerce
         else if($product->is_type('variable'))
         {
             // "sale_percentage" is also the max sale percentage
-            return get_post_meta($product->get_id(),'sale_percentage',true);
+            $max = get_post_meta($product->get_id(),'sale_percentage',true);
+
+            if ($range)
+            {
+                $min = get_post_meta($product->get_id(),'min_sale_percentage',true);
+
+                return $min.'% - '.$max.'%';
+            }
+
+            elseif ($max)
+                return $max;
+
+            else
+            {
+                $variations = new ProductVariations($product);
+                return $variations->getFirstVariant()->getSalePercentage();
+            }
         }
 
         return 0;
@@ -72,10 +107,12 @@ class Woocommerce
      * Returns regular price of product
      *
      * @param WC_Product $product
+     * @param bool $range
+     * @param bool $max
      * @param string $separator
      * @return int|string
      */
-    public static function getRegularPrice(WC_Product $product,string $separator = '/'): int|string
+    public static function getRegularPrice(WC_Product $product,bool $range = false,bool $max = false,string $separator = '/'): int|string
     {
         if($product->is_type('simple'))
         {
@@ -87,10 +124,25 @@ class Woocommerce
         else if($product->is_type('variable'))
         {
             $maxPrice = get_post_meta($product->get_id(),'max_price',true);
-            $minPrice = get_post_meta($product->get_id(),'min_price',true);
 
-            return number_format((float)$maxPrice,0,$separator,$separator).' - '.
-                number_format((float)$minPrice,0,$separator,$separator);
+            if ($range)
+            {
+                $minPrice = get_post_meta($product->get_id(),'min_price',true);
+
+                return number_format((float)$maxPrice,0,$separator,$separator).' - '.
+                    number_format((float)$minPrice,0,$separator,$separator);
+            }
+
+            elseif ($max)
+                return number_format((float)$maxPrice,0,$separator,$separator);
+
+            else
+            {
+                $variations = new ProductVariations($product);
+                $price = $variations->getFirstVariant()->getRegularPrice();
+
+                return number_format($price,0,$separator,$separator);
+            }
         }
 
         return 0;
@@ -100,10 +152,12 @@ class Woocommerce
      * Returns the product's sale price
      *
      * @param WC_Product $product
+     * @param bool $range
+     * @param bool $max
      * @param string $separator
      * @return int|string
      */
-    public static function getSalePrice(WC_Product $product,string $separator = '/'): int|string
+    public static function getSalePrice(WC_Product $product,bool $range = false,bool $max = false,string $separator = '/'): int|string
     {
         if($product->is_type('simple'))
         {
@@ -114,13 +168,112 @@ class Woocommerce
         else if($product->is_type('variable'))
         {
             $maxPrice = get_post_meta($product->get_id(),'max_price',true);
-            $minPrice = get_post_meta($product->get_id(),'min_price',true);
 
-            return number_format((float)$maxPrice,0,$separator,$separator).' - '.
-                number_format((float)$minPrice,0,$separator,$separator);
+            if ($range)
+            {
+                $minPrice = get_post_meta($product->get_id(),'min_price',true);
+
+                return number_format((float)$maxPrice,0,$separator,$separator).' - '.
+                    number_format((float)$minPrice,0,$separator,$separator);
+            }
+
+            elseif ($max)
+                return number_format((float)$maxPrice,0,$separator,$separator);
+
+            else
+            {
+                $variations = new ProductVariations($product);
+                $price = $variations->getFirstVariant()->getDisplayPrice();
+
+                return number_format($price,0,$separator,$separator);
+            }
         }
 
         return 0;
+    }
+
+    /**
+     * Returns date ranges in which products are scheduled to be on sale
+     *
+     * @return array
+     */
+    public static function getSaleDatesRanges(): array
+    {
+        $saleTimestaps = [];
+
+        //All OnSale Products (POST_IDs) , Whether Scheduled Or Not
+        $productIDs = wc_get_product_ids_on_sale();
+
+        //If Scheduled , It Has _Sale_Price_Dates_from/to postmeta
+        foreach($productIDs as $productID)
+        {
+            $startDate = get_post_meta($productID,'_sale_price_dates_to',true);
+
+            if(!empty($startDate))
+            {
+                //The Date(timestamp) Where Sale starts
+                $endDate = get_post_meta($productID,'_sale_price_dates_to',true);
+
+                //Serialize array of start and end dates to have them both together as one array key
+                $serilizedDates = serialize(
+                    [
+                        $startDate,
+                        $endDate
+                    ]
+                );
+
+                $saleTimestaps[$serilizedDates] = Escape::htmlWithTranslation('از').date('Y-m-d',$startDate).
+                    Escape::htmlWithTranslation('تا').date('Y-m-d',$endDate);
+            }
+        }
+
+        return $saleTimestaps;
+    }
+
+    /**
+     * Returns id of products that are on sale in passed range
+     *
+     * @param array $dateRange
+     * @return array
+     */
+    public static function getSaleRangeProducts(array $dateRange): array
+    {
+        global $wpdb;
+
+        $inRangeIDs = [];
+        $start = $dateRange[0];
+        $end = $dateRange[1];
+
+        //post_id of products that have the specified start date
+        $builder = new QueryBuilder();
+
+        $productIDs = $builder->select('post_id')
+            ->from(Table::POSTMETA)
+            ->where('meta_key','=','_sale_price_dates_from')
+            ->andWhere('meta_value','=',$start)
+            ->getResults(OutputType::NUMERIC_ARRAY);
+
+        /**
+         * Checking the end date of returned products.
+         * if the query returns non-empty,means the product has the end date
+         * and surely is in specified range
+         */
+        foreach($productIDs as $productID)
+        {
+            $builder->resetQuery();
+
+            $isInRange = $builder->select('*')
+                ->from(Table::POSTMETA)
+                ->where('post_id','=',$productID[0])
+                ->andWhere('meta_key','=','_sale_price_dates_to')
+                ->andWhere('meta_value','=',$end)
+                ->getResults();
+
+            if($isInRange)
+                $inRangeIDs[] = $productID[0];
+        }
+
+        return $inRangeIDs;
     }
 
     /**
@@ -129,9 +282,10 @@ class Woocommerce
      * @param bool $hide
      * @param bool $addDefault
      * @param bool $rootCats
+     * @param bool $onlyIDs
      * @return array
      */
-    public static function getProductCats(bool $hide = true, bool $addDefault = true, bool $rootCats = false): array
+    public static function getProductCats(bool $hide = true, bool $addDefault = true, bool $rootCats = false, bool $onlyIDs = false): array
     {
         $args = [
             'taxonomy' => 'product_cat',
@@ -146,11 +300,17 @@ class Woocommerce
         $options = [];
 
         if($addDefault)
-            $options[0] = 'هیچ کدام';
+            $options[0] = 'انتخاب کنید';
 
         if(!empty($terms) && !is_wp_error($terms))
-            foreach($terms as $term)
-                $options[$term->term_id] = $term->name;
+        {
+            if ($onlyIDs)
+                foreach($terms as $term)
+                    $options[] = $term->term_id;
+            else
+                foreach($terms as $term)
+                    $options[$term->term_id] = $term->name;
+        }
 
         return $options;
     }
