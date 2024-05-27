@@ -2,6 +2,7 @@
 
 namespace engine\utils;
 
+use WP_Post;
 use WP_Query;
 
 defined('ABSPATH') || exit;
@@ -95,5 +96,19 @@ class Post
             $IDs[$post->ID] = $post->post_title;
 
         return $IDs;
+    }
+
+    /**
+     * Retrieves a post object
+     *
+     * @return array|WP_Post|null
+     */
+    public static function getCurrentPost(): array|WP_Post|null
+    {
+        if (Elementor::isPreview() || Elementor::isEditor())
+            return get_post(CodeStar::getOption('sample-product'));
+
+        else
+            return get_post(get_the_ID());
     }
 }

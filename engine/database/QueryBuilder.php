@@ -4,6 +4,7 @@ namespace engine\database;
 
 use engine\database\enums\OutputType;
 use engine\database\enums\Table;
+use engine\ThemeInitializer;
 
 defined('ABSPATH') || exit;
 
@@ -215,5 +216,22 @@ class QueryBuilder
     public function resetQuery(): void
     {
         $this->query = '';
+    }
+
+    public function setQuery(string $query): QueryBuilder
+    {
+        $this->query = $query;
+        
+        return $this;
+    }
+
+    public function getPrefix(): string
+    {
+        return $this->prefix;
+    }
+
+    public function getQuery(): string
+    {
+        return $this->query;
     }
 }

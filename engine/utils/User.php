@@ -240,4 +240,45 @@ class User
 
         return $recentVisits;
     }
+
+    /**
+     * Returns the rating that user has submitted for the product
+     *
+     * @param int $productID
+     * @param int $userID
+     * @return int
+     */
+    public static function getProductRating(int $productID,int $userID = -1): int
+    {
+        if ($userID == -1)
+            $userID = get_current_user_id();
+
+        $products = get_user_meta($userID,'rated_products',true);
+        $rating = 0;
+
+        if($products)
+        {
+            if(array_key_exists($productID,$products))
+                $rating = $products[$productID];
+        }
+
+        return $rating;
+    }
+
+    /**
+     * Checks whether the user has rated the product
+     *
+     * @param int $productID
+     * @param int $userID
+     * @return bool
+     */
+    public static function hasRated(int $productID,int $userID = -1): bool
+    {
+        if ($userID == -1)
+            $userID = get_current_user_id();
+
+        $products = get_user_meta($userID,'rated_products',true);
+
+        return array_key_exists($productID,$products);
+    }
 }

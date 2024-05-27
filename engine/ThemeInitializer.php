@@ -6,6 +6,9 @@ use Elementor\Plugin;
 use engine\enums\Constants;
 use engine\enums\Defaults;
 use engine\security\Sanitize;
+use engine\templates\demoOne\Factory as DemoOne;
+use engine\templates\demoTwo\Factory as DemoTwo;
+use engine\templates\TemplateFactory;
 use engine\utils\Adaptive;
 use engine\utils\Cookie;
 use engine\utils\Label;
@@ -14,6 +17,8 @@ defined('ABSPATH') || exit;
 
 class ThemeInitializer
 {
+    public static TemplateFactory $template;
+
     function __construct()
     {
         add_action('wp_enqueue_scripts',[$this,'enqueueFiles']);
@@ -24,6 +29,17 @@ class ThemeInitializer
 //        add_action('elementor/editor/after_enqueue_scripts',[$this,'elementorEnqueue']);
         add_filter('register_post_type_args',[$this,'editPostTypes'],20,2);
         add_action('init',[$this,'addPostTypes']);
+
+        /**
+         * check which demo is chosen
+         * if demo 1
+         * self::$template = new DemoOne();
+         *
+         * if demo 2
+         * self::$template = new DemoTwo();
+         *
+         * etc
+         */
     }
 
     /**

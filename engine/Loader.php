@@ -18,6 +18,7 @@ class Loader
         require_once 'database/Loader.php';
         require_once 'utils/Loader.php';
         require_once 'woocommerce/Loader.php';
+        require_once 'templates/Loader.php';
         require_once 'ThemeInitializer.php';
 
         if (is_admin())

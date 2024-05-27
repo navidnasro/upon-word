@@ -28,11 +28,11 @@ class Color
                 ->where('attribute_name','=',str_replace('pa_','',$this->taxonomyName))
                 ->getVar();
 
-    //        $attributeID = $wpdb->get_var(
-    //            "SELECT attribute_id
-    //             from {$wpdb->prefix}woocommerce_attribute_taxonomies
-    //             WHERE attribute_name='".str_replace('pa_','',self::$taxonomyName)."'"
-    //        );
+            //        $attributeID = $wpdb->get_var(
+            //            "SELECT attribute_id
+            //             from {$wpdb->prefix}woocommerce_attribute_taxonomies
+            //             WHERE attribute_name='".str_replace('pa_','',self::$taxonomyName)."'"
+            //        );
 
             $attributes = get_option('color_attributes');
 
@@ -58,7 +58,7 @@ class Color
     {
         //if in admin page and taxonomy page of product post type , get the taxonomy name from url
         if (is_admin() && isset($_GET['taxonomy'],$_GET['post_type'])
-        && $_GET['post_type'] === 'product' ) 
+            && $_GET['post_type'] === 'product' )
         {
             $this->taxonomyName = sanitize_text_field($_GET['taxonomy']);
 
@@ -83,22 +83,22 @@ class Color
      */
     public function addColorField(string $taxonomy): void
     {
-?>
+        ?>
         <div class="form-field">
             <label for="color" style="display: inline;">
                 انتخاب رنگ
             </label>
-            <input 
-            type="color" 
-            id="color" 
-            name="color" 
-            value="#ff0000">
-            <input 
-            type="hidden" 
-            name="taxonomy_name" 
-            value="<?php echo sanitize_text_field($taxonomy) ?>">
+            <input
+                    type="color"
+                    id="color"
+                    name="color"
+                    value="#ff0000">
+            <input
+                    type="hidden"
+                    name="taxonomy_name"
+                    value="<?php echo sanitize_text_field($taxonomy) ?>">
         </div>
-<?php
+        <?php
     }
 
     /**
@@ -110,27 +110,27 @@ class Color
     {
         $term_id = $term->term_id;
         $color = get_term_meta($term_id,'color',true);
-?>
+        ?>
         <div class="form-field">
             <label for="color" style="display: inline;">
                 انتخاب رنگ
             </label>
             <input
-            type="color"
-            id="color"
-            name="color"
-            value="<?php echo $color ? $color : '#ff0000' ?>">
+                    type="color"
+                    id="color"
+                    name="color"
+                    value="<?php echo $color ? $color : '#ff0000' ?>">
             <input
-            type="hidden"
-            name="taxonomy_name"
-            value="<?php echo sanitize_text_field($taxonomy) ?>">
+                    type="hidden"
+                    name="taxonomy_name"
+                    value="<?php echo sanitize_text_field($taxonomy) ?>">
         </div>
-<?php
+        <?php
     }
 
     /**
      * saves the value of color input in database
-     * 
+     *
      * @param int $termID Term ID.
      * @param int $TaxonomyID Term taxonomy ID.
      * @param array $args Arguments passed to wp_insert_term().
@@ -147,7 +147,7 @@ class Color
      */
     public function enable()
     {
-?>
+        ?>
         <div class="form-field">
             <input type="checkbox" id="color_enable" name="color_checkbox">
             <label for="color_enable" style="display: inline;">
@@ -163,12 +163,12 @@ class Color
                     if(hiddenInput.val() == 'disabled')
                         hiddenInput.val('enabled');
 
-                        else
+                    else
                         hiddenInput.val('disabled');
                 });
             });
         </script>
-<?php
+        <?php
     }
 
     public function editEnable(): void
@@ -176,7 +176,7 @@ class Color
         $id = $_GET['edit'];
 
         $attributes = get_option('color_attributes');
-?>
+        ?>
         <div class="form-field">
             <input type="checkbox" id="color_enable" name="color_checkbox" <?php echo in_array($id,$attributes) ? 'checked' : '' ?>>
             <label for="color_enable" style="display: inline;">
@@ -197,12 +197,12 @@ class Color
                 });
             });
         </script>
-<?php
+        <?php
     }
 
     /**
      * saves attribute "color enabled" field in the database
-     * 
+     *
      * @param int $id Added attribute ID.
      * @param array $data Attribute data.
      * @return void
@@ -214,12 +214,14 @@ class Color
         {
             //getting color attributes stored in the database
             $attributes = get_option('color_attributes');
-            
+
             //if option exists and id is not already included
             if($attributes && !in_array($id,$attributes))
             {
                 //adding the current attribute among other color attributes
-                $attributes[] = $id;
+                $attributes[] = [
+                    $data['attribute_name'] => $id
+                ];
                 //inserting the updated array of ids back into the database
                 update_option('color_attributes',$attributes);
             }
@@ -228,7 +230,9 @@ class Color
             else
             {
                 //create color attribute array
-                $attributes = [$id];
+                $attributes[] = [
+                    $data['attribute_name'] => $id
+                ];
                 //insert the array into the database
                 add_option('color_attributes',$attributes);
             }
@@ -251,7 +255,9 @@ class Color
             if($attributes && !in_array($id,$attributes))
             {
                 //adding the current attribute among other color attributes
-                $attributes[] = $id;
+                $attributes[] = [
+                    $data['attribute_name'] => $id
+                ];
                 //inserting the updated array of ids back into the database
                 update_option('color_attributes',$attributes);
             }
@@ -260,7 +266,9 @@ class Color
             else
             {
                 //create color attribute array
-                $attributes = [$id];
+                $attributes[] = [
+                    $data['attribute_name'] => $id
+                ];
                 //insert the array into the database
                 add_option('color_attributes',$attributes);
             }
@@ -270,59 +278,14 @@ class Color
         else if (isset($_POST['color']) && $_POST['color'] == 'disabled')
         {
             //if there are ids and this id is also included
-            if ($attributes && in_array($id,$attributes))
+            if ($attributes && isset($attributes[$data['attribute_name']]))
             {
                 //removing the id from array
-                unset($attributes[array_search($id,$attributes)]);
+                unset($attributes[$data['attribute_name']]);
                 //inserting the updated array of ids back into the database
-                update_option('color_attributes',array_values($attributes));
+                update_option('color_attributes',$attributes);
             }
         }
-    }
-
-    public function sidebarPanel()
-    {
-        global $wpdb;
-
-        $colors = $wpdb->get_results(
-            'SELECT t1.term_id,name,meta_value 
-            FROM (SELECT wp_terms.term_id,name,taxonomy 
-            FROM `wp_terms` 
-            INNER JOIN wp_term_taxonomy 
-            ON
-             wp_terms.term_id = wp_term_taxonomy.term_id 
-             WHERE taxonomy LIKE "pa_%_color") AS t1 
-             INNER join wp_termmeta 
-             ON
-              t1.term_id = wp_termmeta.term_id 
-             WHERE wp_termmeta.meta_key = "color";',
-             'ARRAY_A'
-        );
-?>
-		<aside id="colors" class="single__widget widget__bg">
-			<h4 class="widget__title position__relative h4">
-                فیلتر براساس رنگ
-            </h4>
-			<div class="widget-content">
-				<ul class="colors-filter">
-<?php 
-                    foreach($colors as $color)
-                    {
-?>  
-                        <li>
-                            <a style="background-color: <?php echo $color['meta_value'] ?>;" 
-                            href="../../woocommerce?color=<?php echo $color['term_id'] ?>"
-                            title="<?php echo $color['name'] ?>">
-                                <?php echo $color['name'] ?>
-                            </a>
-                        </li>
-<?php
-                    }
-?>
-                </ul>
-            </div>
-        </aside>
-<?php 
     }
 }
 
