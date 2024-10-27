@@ -1,0 +1,21 @@
+{
+    "name": "navidnasro/upon-word",
+    "description": "A powerful and flexible WordPress theme development framework.",
+    "type": "wordpress-theme",
+    "keywords": ["wordpress", "theme", "framework"],
+    "homepage": "https://github.com/navidnasro/upon-word",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Navid Nasrollahi",
+            "email": "navidnasro13@gmail.com",
+            "homepage": "https://github.com/navidnasro",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.2",
+        "composer/installers": "~1.0"
+    },
+}
+
