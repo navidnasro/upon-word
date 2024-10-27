@@ -6,8 +6,7 @@ use Elementor\Plugin;
 use engine\enums\Constants;
 use engine\enums\Defaults;
 use engine\security\Sanitize;
-use engine\templates\demoOne\Factory as DemoOne;
-use engine\templates\demoTwo\Factory as DemoTwo;
+use engine\templates\DemoFactory;
 use engine\templates\TemplateFactory;
 use engine\utils\Adaptive;
 use engine\utils\Cookie;
@@ -17,29 +16,21 @@ defined('ABSPATH') || exit;
 
 class ThemeInitializer
 {
-    public static TemplateFactory $template;
+    public static ?TemplateFactory $template;
 
     function __construct()
     {
-        add_action('wp_enqueue_scripts',[$this,'enqueueFiles']);
+        add_action('wp_enqueue_scripts',[$this,'enqueueFiles'],999999);
         add_action('widgets_init',[$this,'themeSidebars']);
         add_action('init',[$this,'themeMenus']);
         add_action('after_setup_theme',[$this,'themeSetup']);
-        add_action('admin_enqueue_scripts',[$this,'enqueueAdminFiles']);
-//        add_action('elementor/editor/after_enqueue_scripts',[$this,'elementorEnqueue']);
+		add_action('admin_enqueue_scripts',[$this,'enqueueAdminFiles']);
+        add_action('elementor/editor/after_enqueue_scripts',[$this,'elementorEnqueue']);
         add_filter('register_post_type_args',[$this,'editPostTypes'],20,2);
         add_action('init',[$this,'addPostTypes']);
 
-        /**
-         * check which demo is chosen
-         * if demo 1
-         * self::$template = new DemoOne();
-         *
-         * if demo 2
-         * self::$template = new DemoTwo();
-         *
-         * etc
-         */
+        // defining the template
+        self::$template = DemoFactory::getDemoFactory();
     }
 
     /**
@@ -60,35 +51,74 @@ class ThemeInitializer
         wp_enqueue_script('jq',Defaults::JsFile,[],false,'true');
         wp_enqueue_script('fontawesome-js',Defaults::FontawesomeJs,[],false,'true');
         wp_enqueue_script('swiper-bundle-js',Defaults::SwiperJs,[],false,'true');
-        wp_enqueue_script('compare',Constants::JS.'/compare.js');
-        wp_enqueue_script('favorite',Constants::JS.'/favorites.js');
+        wp_enqueue_script('compare',Constants::JS.'/modules/compare.js');
+        wp_enqueue_script('favorite',Constants::JS.'/modules/favorites.js');
+        wp_enqueue_script('clipboard-savor',Constants::JS.'/modules/clipboard.js');
+        wp_enqueue_script('message-util',Constants::JS.'/utils/message.js');
+        wp_enqueue_script('quantity',Constants::JS.'/modules/quantity.js');
+        wp_enqueue_script('add-remove-to-from-cart-ajax',Constants::JS.'/modules/cart.js');
         wp_add_inline_script(
             'jq',
-            'const PHPVARS = ' . json_encode(array(
-                'ajaxurl' => admin_url('admin-ajax.php'),
-                'root' => ROOT,
-            )),
+            'const PHPVARS = '.json_encode(
+                [
+                    'ajaxurl' => admin_url('admin-ajax.php'),
+                    'root' => ROOT,
+                ]
+            ),
             'before'
         );
+
+        // util functions
+        wp_enqueue_script('wc-nothing-found',Constants::JS.'/utils/nothing-found-message.js');
+
+        if (is_account_page())
+        {
+            wp_enqueue_style('login-css-styles', Constants::CSS.'/login.css');
+            wp_enqueue_script('login-js-scripts',Constants::JS.'/user-panel.js');
+        }
+
+        if (is_cart())
+        {
+            wp_enqueue_style('cart-css-styles', Constants::CSS.'/cart.css');
+            wp_enqueue_script('cart-js-scripts',Constants::JS.'/cart.js');
+        }
 
         // Desktop
         if (Adaptive::isDesktop())
         {
-            if (is_shop())
-                wp_enqueue_style('shop', Constants::CSS . '/shop-desktop.css');
+            if (is_shop() || is_product_taxonomy())
+            {
+                wp_enqueue_style('shop', Constants::CSS.'/shop-desktop.css');
+                wp_enqueue_script('wc-shop',Constants::JS.'/adaptive/desktop/wc-archive.js');
+            }
 
             else if (is_product())
-                wp_enqueue_style('single', Constants::CSS . '/single-desktop.css');
+            {
+                wp_enqueue_style('single', Constants::CSS.'/single-desktop.css');
+                wp_enqueue_script('wc-single',Constants::JS.'/adaptive/desktop/wc-single.js');
+                wp_enqueue_script('wc-find-variation',Constants::JS.'/utils/find-variation.js');
+                wp_enqueue_script('wc-submit-comment',Constants::JS.'/utils/submit-comment.js');
+                wp_enqueue_script('wc-image-zoom',Constants::JS.'/utils/image-zoom.js');
+            }
         }
 
         // Mobile , Tablet
         else
         {
-            if (is_shop())
+            if (is_shop() || is_product_taxonomy())
+            {
                 wp_enqueue_style('shop',Constants::CSS.'/shop-mobile.css');
+                wp_enqueue_script('wc-shop',Constants::JS.'/adaptive/mobile/wc-archive.js');
+                wp_enqueue_script('wc-product-filter',Constants::JS.'/utils/mobile-product-filter-ajax.js');
+            }
 
             else if (is_product())
+            {
                 wp_enqueue_style('single',Constants::CSS.'/single-mobile.css');
+                wp_enqueue_script('wc-single',Constants::JS.'/adaptive/mobile/wc-single.js');
+                wp_enqueue_script('wc-find-variation',Constants::JS.'/utils/find-variation.js');
+                wp_enqueue_script('wc-submit-comment',Constants::JS.'/utils/submit-comment.js');
+            }
         }
     }
 
@@ -97,10 +127,10 @@ class ThemeInitializer
      *
      * @return void
      */
-    public function enqueueAdminFiles(): void
+	public function enqueueAdminFiles(): void
     {
-        wp_enqueue_media();
-    }
+		wp_enqueue_media();
+	}
 
     /**
      * Enqueues elementor editor scripts and styles
@@ -112,7 +142,6 @@ class ThemeInitializer
         if (Plugin::$instance->editor->is_edit_mode())
         {
             wp_enqueue_style('ribar-admin-css',Constants::CSS.'/admin.css');
-//            wp_enqueue_script( 'ribar-admin-js', JS.'/admin.js');
         }
     }
 
@@ -145,8 +174,6 @@ class ThemeInitializer
         add_image_size('article-related', 580,400,true);
         add_image_size('product-offer', 420,420,true);
 
-//        remove_theme_support( 'widgets-block-editor' );
-
         $this->createDefaultLogo();
         $this->createDefaultFavicon();
     }
@@ -172,38 +199,38 @@ class ThemeInitializer
      */
     public function themeSidebars(): void
     {
-        register_sidebar( array(
-            'name'          => 'بلاگ',
-            'id'            => 'blog',
-            'before_widget' => '<div class="wp-widget overflow-hidden flex flex-col w-full border-b border-solid border-[#DEE2E7]">',
-            'after_widget'  => '</div>',
-            'before_title'  => '<h4 class="flex mb-5 items-center justify-between w-full"><span class="text-[var(--title)] text-[15px] font-bold">',
-            'after_title'   => '</span><span class="flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 19 19" fill="none">
-  <path d="M3.51042 6.40977C3.71955 6.20065 4.04679 6.18164 4.2774 6.35274L4.34346 6.40977L9.42474 11.4908L14.506 6.40977C14.7152 6.20065 15.0424 6.18163 15.273 6.35274L15.3391 6.40977C15.5482 6.6189 15.5672 6.94615 15.3961 7.17675L15.3391 7.24281L9.84127 12.7406C9.63214 12.9497 9.30489 12.9688 9.07429 12.7977L9.00822 12.7406L3.51042 7.24282C3.28038 7.01278 3.28038 6.63981 3.51042 6.40977Z" fill="#43454D"/>
-</svg></span></h4>',
-        ) );
+        unregister_sidebar('sidebar-store');
 
-        register_sidebar( array(
-            'name'          => 'فروشگاه دسکتاپ',
-            'id'            => 'shop',
-            'before_widget' => '<div class="wp-widget overflow-hidden flex flex-col w-full mb-8 border-b border-solid border-[#DEE2E7]">',
-            'after_widget'  => '</div>',
-            'before_title'  => '<h4 class="flex mb-5 items-center justify-between w-full"><span class="text-[var(--title)] text-[15px] font-bold">',
-            'after_title'   => '</span><span class="flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 19 19" fill="none">
-  <path d="M3.51042 6.40977C3.71955 6.20065 4.04679 6.18164 4.2774 6.35274L4.34346 6.40977L9.42474 11.4908L14.506 6.40977C14.7152 6.20065 15.0424 6.18163 15.273 6.35274L15.3391 6.40977C15.5482 6.6189 15.5672 6.94615 15.3961 7.17675L15.3391 7.24281L9.84127 12.7406C9.63214 12.9497 9.30489 12.9688 9.07429 12.7977L9.00822 12.7406L3.51042 7.24282C3.28038 7.01278 3.28038 6.63981 3.51042 6.40977Z" fill="#43454D"/>
-</svg></span></h4>',
-        ) );
+        register_sidebar(
+            [
+                'name'          => 'بلاگ',
+                'id'            => 'blog',
+                'before_widget' => '<div id="product-filters" class="relative flex flex-col items-start w-full rounded-3xl bg-white px-3.5">',
+                'after_widget'  => '</div>',
+            ]
+        );
 
-        register_sidebar( array(
-            'name'          => 'فروشگاه موبایل',
-            'id'            => 'shop-mobile',
-            'before_widget' => '<div class="wp-widget overflow-hidden flex flex-col w-full mb-8 border-b border-solid border-[#DEE2E7]">',
-            'after_widget'  => '</div>',
-            'before_title'  => '<h4 class="flex mb-5 items-center justify-between w-full"><span class="text-[var(--title)] text-[15px] font-bold">',
-            'after_title'   => '</span><span class="flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="19" height="19" viewBox="0 0 19 19" fill="none">
-  <path d="M3.51042 6.40977C3.71955 6.20065 4.04679 6.18164 4.2774 6.35274L4.34346 6.40977L9.42474 11.4908L14.506 6.40977C14.7152 6.20065 15.0424 6.18163 15.273 6.35274L15.3391 6.40977C15.5482 6.6189 15.5672 6.94615 15.3961 7.17675L15.3391 7.24281L9.84127 12.7406C9.63214 12.9497 9.30489 12.9688 9.07429 12.7977L9.00822 12.7406L3.51042 7.24282C3.28038 7.01278 3.28038 6.63981 3.51042 6.40977Z" fill="#43454D"/>
-</svg></span></h4>',
-        ) );
+        register_sidebar(
+            [
+                'name'          => 'فروشگاه',
+                'id'            => 'shop',
+                'before_widget' => '<div id="product-filters" class="relative flex flex-col items-start w-full rounded-3xl bg-white px-3.5">',
+                'after_widget'  => '</div>',
+                'before_title' => '<div class="product-attribute-label flex items-center justify-between w-full py-5 px-[5px] cursor-pointer"><span class="font-bold text-[15px] text-darkblue">',
+                'after_title' => '</span><span class="flex items-center justify-center rotate-180"><svg xmlns="http://www.w3.org/2000/svg" width="11" height="6" viewBox="0 0 11 6" fill="none"><path d="M4.78227 0.28283C4.73296 0.333115 4.69133 0.388788 4.65513 0.446616L0.876256 4.32738C0.507777 4.70614 0.507603 5.31998 0.876431 5.69892C1.24509 6.07767 1.84301 6.07767 2.21201 5.69892L5.46642 2.35656L8.73796 5.7158C9.10643 6.09473 9.70453 6.09473 10.0735 5.7158C10.2577 5.52633 10.3499 5.27832 10.3499 5.0303C10.3499 4.78229 10.2577 4.53373 10.0732 4.34481L6.2777 0.446616C6.2415 0.388788 6.20005 0.333295 6.15056 0.28283C5.96168 0.0888724 5.7137 -0.00415516 5.46642 0.000154972C5.21896 -0.00433493 4.97062 0.0888724 4.78227 0.28283Z" fill="#0E1935"></path></svg></span></div>',
+            ]
+        );
+
+        register_sidebar(
+            [
+                'name'          => 'صفحه محصول',
+                'id'            => 'product',
+                'before_widget' => '<div id="buy-box" class="relative bg-white rounded-3xl w-full p-5 space-y-2.5 w-full">',
+                'after_widget'  => '</div>',
+                'before_title' => '<div class="product-attribute-label flex items-center justify-between w-full py-5 px-[5px] cursor-pointer"><span class="font-bold text-[15px] text-darkblue">',
+                'after_title' => '</span></div>',
+            ]
+        );
     }
 
     /**
@@ -259,7 +286,7 @@ class ThemeInitializer
             if (!is_numeric($logo))
                 return;
 
-            else if (wp_attachment_is_image($logo))
+             else if (wp_attachment_is_image($logo))
                 return;
         }
 

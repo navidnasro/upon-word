@@ -2,57 +2,27 @@
 
 namespace engine\wordpress;
 
+use engine\enums\Constants;
+use engine\enums\Defaults;
+use engine\utils\CodeStar;
+use engine\utils\Theme;
+use engine\VarDump;
+use WC_Query;
+use WP_Query;
+
 defined('ABSPATH') || exit;
 
 class Actions
 {
     public function __construct()
     {
-        add_action('init',[$this,'addCustomTabsPages']);
-        add_action('wp_loaded',[$this,'flushRewriteRules']);
-        add_action('wp_head',[$this,'headParams']);
+        add_action('wp_footer',[$this,'ajaxPreloader']);
         add_action('admin_notices',[$this,'adminNotices']);
-    }
-
-    /**
-     * Adds custom endpoints to wordpress system
-     *
-     * @return void
-     */
-    public function addCustomTabsPages(): void
-    {
-        add_rewrite_endpoint( 'favorites', EP_ROOT | EP_PAGES );
-        add_rewrite_endpoint( 'recents', EP_ROOT | EP_PAGES );
-        add_rewrite_endpoint( 'comments', EP_ROOT | EP_PAGES );
-    }
-
-    /**
-     * Removes rewrite rules and then recreate rewrite rules.
-     *
-     * @return void
-     */
-    public function flushRewriteRules(): void
-    {
-        flush_rewrite_rules();
-    }
-
-    public function headParams(): void
-    {
-        global $ribar_options;
-        ?>
-        <style>
-            :root{
-                --global-font: <?php echo $ribar_options['global-font'] ?>
-            }
-        </style>
-        <?php
     }
 
     public function adminNotices(): void
     {
-        $plugins = apply_filters('active_plugins',get_option('active_plugins'));
-
-        if (!in_array('elementor/elementor.php',$plugins))
+        if (!Theme::pluginExists('elementor'))
         {
             ?>
             <div class="notice notice-warning is-dismissible">
@@ -61,7 +31,7 @@ class Actions
             <?php
         }
 
-        if (!in_array('woocommerce/woocommerce.php',$plugins))
+        if (!Theme::pluginExists('woocommerce'))
         {
             ?>
             <div class="notice notice-warning is-dismissible">
@@ -70,6 +40,45 @@ class Actions
             <?php
         }
 
+    }
+
+    public function ajaxPreloader(): void
+    {
+        $logo = CodeStar::getOption('logo');
+        $style = CodeStar::getOption('preloader-style');
+
+        if ($style == 'style-1')
+        {
+            ?>
+            <div id="loader-overlay" class="fixed hidden space-y-3.5 top-0 z-[10000] w-full h-full flex-col items-center justify-center bg-black/[.6]">
+                <div class="flex items-center justify-center">
+                    <img src="<?php echo $logo ? $logo['url'] : Defaults::Logo ?>">
+                </div>
+                <div class="loader"></div>
+            </div>
+            <?php
+        }
+
+        else if ($style == 'style-2')
+        {
+            ?>
+            <div id="loader-overlay" class="default-preloader fixed hidden top-0 right-0 bottom-0 left-0 bg-black/[.35] z-[10000] w-full h-full flex-col items-center justify-center">
+                <div class="preloader-content-wrapper space-y-2.5">
+                    <div class="flex items-center justify-center">
+                        <img src="<?php echo $logo ? $logo['url'] : Defaults::Logo ?>">
+                    </div>
+                    <div class="preloader-dots">
+                        <div class="dot dot1"></div>
+                        <div class="dot dot2"></div>
+                        <div class="dot dot3"></div>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
+        ?>
+
+        <?php
     }
 }
 

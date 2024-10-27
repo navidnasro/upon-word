@@ -3,20 +3,45 @@
 namespace engine\utils;
 
 use engine\enums\Constants;
+use engine\VarDump;
 
 defined('ABSPATH') || exit;
 
 class CodeStar
 {
+    private static ?array $options = null;
+
     public static function getOptions(): mixed
     {
-        return get_option(Constants::SettingsObjectID);
+        if (is_null(self::$options))
+            self::$options = get_option(Constants::SettingsObjectID);
+
+        return self::$options;
     }
 
-    public static function getOption(string $optionName): mixed
+    public static function updateOption(string $optionName,string $optionValue): void
     {
-        $options = get_option(Constants::SettingsObjectID);
+        if (isset(self::$options[$optionName]) && self::$options[$optionName] != $optionValue)
+        {
+            self::$options[$optionName] = $optionValue;
 
-        return $options[$optionName] ?? ''; // if not exit return empty string
+            update_option(Constants::SettingsObjectID,self::$options);
+        }
+    }
+
+    public static function getOption(string $optionName,mixed $default = false): mixed
+    {
+        if (is_null(self::$options))
+            self::$options = get_option(Constants::SettingsObjectID);
+
+        return self::$options[$optionName] ?? $default; // if not exist return empty string
+    }
+
+    public static function isOptionChanged(string $option,array $prevOptions,array $newOptions): bool
+    {
+        // Checking the option-key change or not.
+        return isset($prevOptions[$option]) &&
+               isset($newOptions[$option]) &&
+               ($prevOptions[$option] !== $newOptions[$option]);
     }
 }

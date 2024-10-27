@@ -3,6 +3,9 @@
 namespace engine\admin;
 
 use engine\admin\fontawesome\Library;
+use engine\enums\Constants;
+use engine\storage\Storage;
+use engine\utils\Request;
 
 defined('ABSPATH') || exit;
 
@@ -37,6 +40,44 @@ class AjaxHandler
             </div>
             <?php
         }
+
+        wp_die();
+    }
+
+    public function getStateCities(): void
+    {
+        if (!Request::isAjax())
+            wp_die();
+
+        $data = Request::post()->getParams();
+        $state = $data['state'];
+
+        $cities = Storage::getJsonDataWhere(Constants::Storage.'/json/cities.json',$state);
+
+        $html = '';
+        ob_start();
+        if ($cities)
+        {
+            ?>
+            <option></option>
+            <?php
+            foreach ($cities as $cityCode => $cityName)
+            {
+                ?>
+                <option value="<?php echo $cityCode ?>">
+                    <?php echo $cityName ?>
+                </option>
+                <?php
+            }
+
+            $html = ob_get_clean();
+        }
+
+
+        wp_send_json([
+            'success' => !empty($html),
+            'data' => $html,
+        ]);
 
         wp_die();
     }

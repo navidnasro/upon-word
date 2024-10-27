@@ -2,6 +2,8 @@
 
 namespace engine\utils;
 
+use engine\security\Cryptography;
+use engine\security\Escape;
 use engine\security\Sanitize;
 
 defined('ABSPATH') || exit;
@@ -20,7 +22,8 @@ class Cookie
      */
     public static function set(string $cookieName,mixed $value,int $expire,bool $secure = false,string $path = '/'): bool
     {
-        $value = base64_encode(serialize(Sanitize::variable($value)));
+        $crypto = new Cryptography(true);
+        $value = $crypto->encrypt(serialize(Sanitize::variable($value)));
 
         $options = [
             'expires' => $expire,
@@ -50,8 +53,32 @@ class Cookie
         if (!self::exists($cookieName))
             return null;
 
-        // decode , unslash , sanitize , unserialize
-        return unserialize(Sanitize::text(wp_unslash(base64_decode($_COOKIE[$cookieName]))));
+        $crypto = new Cryptography(false);
+        $value = $crypto->decrypt($_COOKIE[$cookieName]);
+
+        // if cookie value is modified
+        if ($value == -1)
+        {
+            unset($_COOKIE[$cookieName]); // remove the cookie
+
+            wp_die(
+                Escape::htmlWithTranslation('شما اجازه دسترسی به این بخش رو ندارید'),
+                Escape::htmlWithTranslation('خطای امنیتی'),
+                503
+            );
+        }
+
+        // data was not decrypted successfully
+        elseif (!$value)
+        {
+            wp_die(
+                Escape::htmlWithTranslation('سرور میزبان نتوانست اطلاعات رو استخراج کند!لطفا بعدا تلاش کنید'),
+                Escape::htmlWithTranslation('خطای سرور'),
+                500
+            );
+        }
+
+        return unserialize($value);
     }
 
     /**

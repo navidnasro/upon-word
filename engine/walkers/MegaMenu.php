@@ -22,25 +22,25 @@ class MegaMenu extends Walker_Nav_Menu
 
     /**
      * @param $output
-     * @param $dataObject
+     * @param $data_object
      * @param $depth
      * @param $args
-     * @param $currentObjectID
+     * @param $current_objectid
      * @return void
      */
-    public function start_el(&$output, $dataObject, $depth = 0, $args = null, $currentObjectID = 0) : void
+    public function start_el(&$output, $data_object, $depth = 0, $args = null, $current_objectid = 0) : void
     {
-        $classes = implode(' ',$dataObject->classes);
+        $classes = implode(' ',$data_object->classes);
         $output .= '<li class="'.$classes.'">';
 
         if($depth == 0)
         {
-            $megaMenu = get_post_meta($dataObject->ID, 'megamenu', true );
-            $icon = get_post_meta($dataObject->ID, 'icon', true );
+            $megaMenu = get_post_meta($data_object->ID, 'megamenu', true );
+            $icon = get_post_meta($data_object->ID, 'icon', true );
 
             if(!empty($icon))
             {
-                $output .= '<a class="flex items-center space-x-1.5 space-x-reverse" href="'.$dataObject->url.'">';
+                $output .= '<a class="flex items-center space-x-1.5 space-x-reverse" href="'.$data_object->url.'">';
 
                 if(str_contains($icon,'<svg'))
                     $output .= $icon;
@@ -48,14 +48,14 @@ class MegaMenu extends Walker_Nav_Menu
                 else
                     $output .= '<span class="menu-icon"><i class="'.$icon.'"></i></span>';
 
-                $output .= '<span>'.$dataObject->title.'</span>';
+                $output .= '<span>'.$data_object->title.'</span>';
                 $output .= '</a>';
             }
 
             else
             {
-                $output .= '<a href="'.$dataObject->url.'">';
-                $output .= $dataObject->title;
+                $output .= '<a href="'.$data_object->url.'">';
+                $output .= $data_object->title;
                 $output .= '</a>';
             }
 
@@ -69,14 +69,14 @@ class MegaMenu extends Walker_Nav_Menu
 
         else
         {
-            $output .= '<a href="'.$dataObject->url.'">';
-            $output .= $dataObject->title;
+            $output .= '<a href="'.$data_object->url.'">';
+            $output .= $data_object->title;
             $output .= '</a>';
         }
 
     }
 
-    public function end_el(&$output, $dataObject, $depth = 0, $args = null) : void
+    public function end_el(&$output, $data_object, $depth = 0, $args = null) : void
     {
         $output .= '</li>';
     }

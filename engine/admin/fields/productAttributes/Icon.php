@@ -8,16 +8,8 @@ use engine\security\Escape;
 
 defined('ABSPATH') || exit;
 
-class Icon
+class Icon extends Base
 {
-    public function __construct()
-    {
-        add_action('woocommerce_after_add_attribute_fields',[$this,'addField']);
-        add_action('woocommerce_after_edit_attribute_fields',[$this,'editField']);
-        add_action('woocommerce_attribute_added',[$this,'save'],10,2);
-        add_action('woocommerce_attribute_updated',[$this,'update'],10,3);
-    }
-
     /**
      * @return void
      */
@@ -138,7 +130,7 @@ class Icon
     {
         $id = $_GET['edit'];
 
-        $builder = new QueryBuilder();
+        $builder = QueryBuilder::getInstance();
 
         $taxonomy = $builder->select('attribute_name')
             ->from(Table::WOOCOMMERCE_ATTRIBUTE_TAXONOMIES)

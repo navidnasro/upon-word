@@ -52,8 +52,8 @@ class Register
     public static function registerCategories(Elements_Manager $widgetsManager): void
     {
         $categories = [
-            'ribar-category' => [
-                'title' => Escape::htmlWithTranslation('اختصاصی'),
+            'main-category' => [
+                'title' => Escape::htmlWithTranslation('اصلی'),
                 'icon' => 'fa fa-plug',
             ],
         ];

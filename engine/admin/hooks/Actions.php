@@ -2,7 +2,8 @@
 
 namespace engine\admin\hooks;
 
-use engine\utils\Woocommerce;
+use engine\database\enums\Table;
+use engine\database\QueryBuilder;
 use engine\woocommerce\ProductVariations;
 
 defined('ABSPATH') || exit;
@@ -24,6 +25,9 @@ class Actions
     {
         $product = wc_get_product($postID);
 
+        if (!$product)
+            return;
+
         // if product is variable
         if ($product->is_type('variable'))
         {
@@ -35,10 +39,6 @@ class Actions
             $minPercentage = $variations[0]->getSalePercentage();
             $maxPercentage = $variations[0]->getSalePercentage();
 
-            // taking first variant as default min and max price
-            $minPrice = $variations[0]->getDisplayPrice();
-            $maxPrice = $variations[0]->getDisplayPrice();
-
             // for each variation add "sale_percentage" meta data
             foreach ($variations as $variant)
             {
@@ -48,12 +48,6 @@ class Actions
                 elseif ($variant->getSalePercentage() < $minPercentage)
                     $minPercentage = $variant->getSalePercentage();
 
-                if ($variant->getDisplayPrice() > $maxPrice)
-                    $maxPrice = $variant->getDisplayPrice();
-
-                elseif ($variant->getDisplayPrice() < $minPrice)
-                    $minPrice = $variant->getDisplayPrice();
-
                 update_post_meta(
                     $variant->getID(),
                     'sale_percentage',
@@ -61,57 +55,14 @@ class Actions
                 );
             }
 
-            // adding the max sale percentage for the parent product as its sale percentage
-            update_post_meta(
-                $product->get_id(),
-                'sale_percentage',
-                $maxPercentage
-            );
-
-            // adding the max sale percentage for the parent product
-            update_post_meta(
-                $product->get_id(),
-                'min_sale_percentage',
-                $minPercentage
-            );
-
-            // adding the min price for the parent product
-            update_post_meta(
-                $product->get_id(),
-                'min_price',
-                $minPrice
-            );
-
-            // adding the max price for the parent product
-            update_post_meta(
-                $product->get_id(),
-                'max_price',
-                $maxPrice
-            );
-
-//            $builder = new QueryBuilder();
-//            $builder->insert(
-//                [$product->get_id(),'sale_percentage',$maxPercentage],
-//                [$product->get_id(),'max_sale_percentage',$maxPercentage],
-//                [$product->get_id(),'min_sale_percentage',$minPercentage],
-//                [$product->get_id(),'max_price',$maxPrice],
-//                [$product->get_id(),'min_price',$minPrice],
-//            )->into(Table::POSTMETA,
-//                'post_id','meta_key','meta_value'
-//            )->doQuery();
+            $builder = QueryBuilder::getInstance();
+            $builder->insert(
+                [$product->get_id(),'max_sale_percentage',$maxPercentage],
+                [$product->get_id(),'min_sale_percentage',$minPercentage],
+            )->into(Table::POSTMETA,
+                'post_id','meta_key','meta_value'
+            )->doQuery();
         }
-
-        // if product is simple
-        else if ($product->is_type('simple'))
-        {
-            // add "sale_percentage" meta data
-            update_post_meta(
-                $postID,
-                'sale_percentage',
-                Woocommerce::getSalePercentage(wc_get_product($postID))
-            );
-        }
-
     }
 }
 

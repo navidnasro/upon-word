@@ -10,6 +10,7 @@ enum Defaults
     const Logo = Constants::IMG.'/logo.png'; // logo image
     const ProductNoImage = Constants::IMG.'/product-no-image.jpg'; // product image not set
     const PostNoImage = Constants::IMG.'/post-no-image.jpg'; // post image not set
+    const TermNoImage = Constants::IMG.'/empty-cart.png'; // post image not set
     const NotFound = Constants::IMG.'404.png'; // 404 image
     const CssFile = Constants::CSS.'/style.css'; // css main file (general file)
     const SwiperCss = Constants::CSS.'/plugins/swiper-bundle.min.css'; // swiper css file

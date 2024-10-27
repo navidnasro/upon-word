@@ -2,6 +2,7 @@
 
 namespace engine\utils;
 
+use engine\VarDump;
 use WP_Term;
 
 defined('ABSPATH') || exit;
@@ -115,5 +116,40 @@ class Theme
             $count ++;
             update_post_meta($postID, $countKey,(string) $count);
         }
+    }
+
+    /**
+     * Retrieves plugin data
+     *
+     * @param string $plugin
+     * @param string $data
+     * @return false|mixed
+     */
+    public static function getPluginData(string $plugin,string $data): mixed
+    {
+        if (Theme::pluginExists($plugin))
+        {
+            $plugin_data = get_plugin_data($plugin.'/'.$plugin.'.php',false,false);
+
+            if (!empty($plugin_data[$data]))
+                return $plugin_data[$data];
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if the passed plugin is installed and active
+     *
+     * @param string $pluginName
+     * @return bool
+     */
+    public static function pluginExists(string $pluginName): bool
+    {
+        $plugins = apply_filters('active_plugins',get_option('active_plugins'));
+
+        return in_array($pluginName.'/'.$pluginName.'.php',$plugins) ||
+            in_array($pluginName.'-lite/'.$pluginName.'.php',$plugins) ||
+            in_array($pluginName.'-pro/'.$pluginName.'.php',$plugins);
     }
 }

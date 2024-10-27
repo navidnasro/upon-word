@@ -44,8 +44,7 @@ class Elementor
     {
         return ((isset($_GET['action']) && $_GET['action'] == 'elementor') ||
                (isset($_GET['post_type']) && $_GET['post_type'] == 'elementor_library') ||
-               (isset($_GET['elementor_library']) && isset($_GET['elementor-preview'])) ||
-                Plugin::$instance->editor->is_edit_mode());
+               (isset($_GET['elementor_library']) && isset($_GET['elementor-preview'])));
     }
 
     /**
@@ -57,8 +56,7 @@ class Elementor
     {
 		return (isset($_GET['elementor_library']) ||
                (isset($_GET['preview_id'])) ||
-               (isset($_GET['preview']) && $_GET['preview'] == true) ||
-                Plugin::$instance->preview->is_preview_mode());
+               (isset($_GET['preview']) && $_GET['preview'] == true));
 	}
 
     /**

@@ -26,10 +26,10 @@ class Register
 
         });
 
-        add_action($taxonomy->getID().'_add_form_fields',[$taxonomy,'createFields'],10);
-        add_action($taxonomy->getID().'_edit_form_fields',[$taxonomy,'editFields']);
-        add_action('edited_'.$taxonomy->getID(),[$taxonomy,'insert']);
-        add_action('created_'.$taxonomy->getID(),[$taxonomy,'update']);
+        add_action('brands_add_form_fields',[$taxonomy,'createFields'],10);
+        add_action('brands_edit_form_fields',[$taxonomy,'editFields']);
+        add_action('edited_brands',[$taxonomy,'insert']);
+        add_action('created_brands',[$taxonomy,'update']);
     }
 }
 

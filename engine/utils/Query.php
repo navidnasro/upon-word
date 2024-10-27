@@ -17,11 +17,17 @@ class Query
      */
     public static function getPostTypeCount(string $postType): int
     {
+        $excludePosts = [];
+
+        if (Theme::pluginExists('dokan'))
+            $excludePosts[] = get_option('dokan_reverse_withdrawal_product_id');
+
         $query = new WP_Query(
             [
                 'post_type' => $postType,
                 'post_status' => 'publish',
                 'posts_per_page' => -1,
+                'post__not_in' => $excludePosts,
             ]
         );
 

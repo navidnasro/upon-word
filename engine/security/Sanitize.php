@@ -30,9 +30,10 @@ class Sanitize
      * Sanitizes a variable's value
      *
      * @param mixed $variable
+     * @param bool $htmlOnly
      * @return array|string
      */
-    public static function variable(mixed $variable): array|string
+    public static function variable(mixed $variable,bool $htmlOnly = false): array|string
     {
         if (is_array($variable))
         {
@@ -40,9 +41,23 @@ class Sanitize
 
             foreach ($variable as $key => $value)
             {
-                $key = sanitize_key($key);
+                if ($htmlOnly)
+                    $key = Escape::htmlTags($key);
+                else
+                    $key = sanitize_key($key);
+
                 // if the value is array , sanitize it recursively
-                $array[$key] = is_array($value) ? self::variable($value) : self::text($value);
+                if (is_array($value))
+                    $array[$key] = self::variable($value);
+
+                else
+                {
+                    if ($htmlOnly)
+                        $array[$key] = Escape::htmlTags($value);
+
+                    else
+                        $array[$key] = self::text($value);
+                }
             }
 
             return $array;

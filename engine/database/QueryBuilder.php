@@ -4,7 +4,6 @@ namespace engine\database;
 
 use engine\database\enums\OutputType;
 use engine\database\enums\Table;
-use engine\ThemeInitializer;
 
 defined('ABSPATH') || exit;
 
@@ -12,13 +11,25 @@ class QueryBuilder
 {
     private string $query;
     private string $prefix;
+    private static ?QueryBuilder $instance = null;
 
-    public function __construct()
+    private function __construct()
     {
         global $wpdb;
 
         $this->query = '';
         $this->prefix = $wpdb->base_prefix;
+    }
+
+    public static function getInstance(): QueryBuilder
+    {
+        if (is_null(self::$instance))
+        {
+            self::$instance = new self();
+        }
+
+        self::$instance->resetQuery();
+        return self::$instance;
     }
 
     public function select(string ...$columns): QueryBuilder
@@ -221,7 +232,7 @@ class QueryBuilder
     public function setQuery(string $query): QueryBuilder
     {
         $this->query = $query;
-        
+
         return $this;
     }
 

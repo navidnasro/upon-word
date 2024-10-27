@@ -13,6 +13,7 @@ class Loader
      */
     public static function load(): void
     {
+        require_once 'VarDump.php';
         require_once 'enums/Loader.php';
         require_once 'security/Loader.php';
         require_once 'database/Loader.php';
@@ -21,10 +22,17 @@ class Loader
         require_once 'templates/Loader.php';
         require_once 'ThemeInitializer.php';
 
+        require_once 'admin/Loader.php';
+
         if (is_admin())
         {
-            require_once 'admin/Loader.php';
             require_once 'settings/Loader.php';
+        }
+
+        else
+        {
+            require_once 'EndpointHandler.php';
+            require_once 'Redirects.php';
         }
 
         require_once 'AjaxHandler.php';
@@ -32,6 +40,7 @@ class Loader
         require_once 'walkers/Loader.php';
         require_once 'elementor/Loader.php';
         require_once 'wordpress/Loader.php';
+        require_once 'storage/Loader.php';
     }
 
     /**
@@ -63,7 +72,7 @@ class Loader
             require_once $directory.'/'.$interface;
 
         foreach($files as $file)
-                require_once $file;
+            require_once $file;
     }
 }
 

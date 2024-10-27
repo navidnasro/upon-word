@@ -92,7 +92,7 @@ class Term
      */
     public static function getDirectChildren(WP_Term|int $term): array
     {
-        $builder = new QueryBuilder();
+        $builder = QueryBuilder::getInstance();
 
         if(is_numeric($term))
             $term = get_term($term);
@@ -107,5 +107,43 @@ class Term
             ->from(Table::TERM_TAXONOMY)
             ->where('parent','=',$term->term_id)
             ->getColumn();
+    }
+
+    /**
+     * Retrieves all terms of passed taxonomies associated to a list of posts
+     *
+     * @param array $postIds
+     * @param array $taxonomies
+     * @return array
+     */
+    public static function getTermsOfPosts(array $postIds,array $taxonomies): array
+    {
+        $organizedData = [];
+        $builder = QueryBuilder::getInstance();
+        
+        $results = $builder->setQuery(
+            "SELECT DISTINCT term_id,taxonomy FROM 
+                (SELECT taxonomy,term_id FROM wp_term_taxonomy AS t 
+                INNER JOIN wp_term_relationships AS tt
+                ON t.term_taxonomy_id = tt.term_taxonomy_id WHERE
+                tt.object_id IN (".implode(',',$postIds).")) AS tttt
+                WHERE tttt.taxonomy IN (".implode(',',$taxonomies).");"
+        )->getResults();
+
+        if ($results)
+        {
+            foreach ($results as $result)
+            {
+                $taxonomy = $result['taxonomy'];
+                $termId = $result['term_id'];
+
+                if (!isset($organizedData[$taxonomy]))
+                    $organizedData[$taxonomy] = [];
+
+                $organizedData[$taxonomy][] = $termId;
+            }
+        }
+
+        return $organizedData;
     }
 }

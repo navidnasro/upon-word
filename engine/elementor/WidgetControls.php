@@ -290,7 +290,7 @@ class WidgetControls
             'type' => Controls_Manager::COLOR,
             'selectors' => $css,
         ];
-
+        
         return $this->createControl($id,$defaults,$params);
     }
 

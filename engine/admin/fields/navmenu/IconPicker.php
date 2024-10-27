@@ -70,7 +70,8 @@ class IconPicker
 
         ?>
         <style>
-            .icon:hover{
+            .icon:hover
+            {
                 border: solid 1px #00c0ff !important;
             }
         </style>

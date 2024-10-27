@@ -7,14 +7,22 @@ use engine\database\enums\OutputType;
 use engine\database\enums\Table;
 use engine\database\QueryBuilder;
 use engine\security\Escape;
+use engine\VarDump;
+use engine\woocommerce\ProductVariant;
 use engine\woocommerce\ProductVariations;
 use WC_Product;
 use WC_Product_Attribute;
+use WC_Product_Variation;
 
 defined('ABSPATH') || exit;
 
 class Woocommerce
 {
+    private static ?WC_Product $product = null;
+
+    // all retrieved data from database in app life cycle
+    private static array $fetchedData;
+
     /**
      * Prints sale percentage
      *
@@ -33,16 +41,23 @@ class Woocommerce
                 echo '0%';
                 return;
             }
+
+            return;
         }
 
         else if($product->is_type('variable'))
         {
+            if ($product->get_parent_id() != 0)
+            {
+                echo (100 - round(((int)$product->get_sale_price() * 100) / (int)$product->get_regular_price())).'%';
+            }
+
             // "sale_percentage" is also the max sale percentage
-            $variationsMax = get_post_meta($product->get_id(),'sale_percentage',true);
+            $variationsMax = self::getMaxSalePercentage($product);
 
             if ($range)
             {
-                $variationsMin = get_post_meta($product->get_id(),'min_sale_percentage',true);
+                $variationsMin = self::getMinSalePercentage($product);
 
                 echo $variationsMin.'% - '.$variationsMax.'%';
             }
@@ -83,12 +98,17 @@ class Woocommerce
 
         else if($product->is_type('variable'))
         {
+            if ($product->get_parent_id() != 0)
+            {
+                return (100 - round(((int)$product->get_sale_price() * 100) / (int)$product->get_regular_price()));
+            }
+
             // "sale_percentage" is also the max sale percentage
-            $variationsMax = get_post_meta($product->get_id(),'sale_percentage',true);
+            $variationsMax = self::getMaxSalePercentage($product);
 
             if ($range)
             {
-                $variationsMin = get_post_meta($product->get_id(),'min_sale_percentage',true);
+                $variationsMin = self::getMinPrice($product);
 
                 return $variationsMin.'% - '.$variationsMax.'%';
             }
@@ -126,11 +146,18 @@ class Woocommerce
         // if is variable , return price range
         else if($product->is_type('variable'))
         {
-            $maxPrice = get_post_meta($product->get_id(),'max_price',true);
+            // if a variation is passed not a product root
+            if ($product->get_parent_id() != 0)
+            {
+                $price = $product->get_regular_price();
+                return number_format((float)$price,0,$separator,$separator);
+            }
+
+            $maxPrice = self::getMaxPrice($product);
 
             if ($range)
             {
-                $minPrice = get_post_meta($product->get_id(),'min_price',true);
+                $minPrice = self::getMinPrice($product);
 
                 return number_format((float)$maxPrice,0,$separator,$separator).' - '.
                     number_format((float)$minPrice,0,$separator,$separator);
@@ -170,11 +197,18 @@ class Woocommerce
 
         else if($product->is_type('variable'))
         {
-            $maxPrice = get_post_meta($product->get_id(),'max_price',true);
+            // if a variation is passed not a product root
+            if ($product->get_parent_id() != 0)
+            {
+                $price = $product->get_sale_price();
+                return number_format((float)$price,0,$separator,$separator);
+            }
+
+            $maxPrice = self::getMaxPrice($product);
 
             if ($range)
             {
-                $minPrice = get_post_meta($product->get_id(),'min_price',true);
+                $minPrice = self::getMinPrice($product);
 
                 return number_format((float)$maxPrice,0,$separator,$separator).' - '.
                     number_format((float)$minPrice,0,$separator,$separator);
@@ -196,15 +230,81 @@ class Woocommerce
     }
 
     /**
+     * Returns the discount amount of product price
+     *
+     * @param WC_Product $product
+     * @return int
+     */
+    public static function getDiscountedPrice(WC_Product $product): float
+    {
+        return ((float)$product->get_regular_price())-((float)$product->get_sale_price());
+    }
+
+    /**
+     * Returns the max price of product
+     *
+     * @param WC_Product $product
+     * @return string|null
+     */
+    public static function getMaxPrice(WC_Product $product): ?string
+    {
+        $builder = QueryBuilder::getInstance();
+
+        return $builder->select('max_price')
+            ->from(Table::WC_PRODUCT_META_LOOKUP)
+            ->where('product_id','=',$product->get_id())
+            ->getVar();
+    }
+
+    /**
+     * Returns the min price of product
+     *
+     * @param WC_Product $product
+     * @return string|null
+     */
+    public static function getMinPrice(WC_Product $product): ?string
+    {
+        $builder = QueryBuilder::getInstance();
+
+        return $builder->select('min_price')
+            ->from(Table::WC_PRODUCT_META_LOOKUP)
+            ->where('product_id','=',$product->get_id())
+            ->getVar();
+    }
+
+    /**
+     * Returns the max sale percentage of product
+     *
+     * @param WC_Product $product
+     * @return string|bool
+     */
+    public static function getMaxSalePercentage(WC_Product $product): string|bool
+    {
+        return get_post_meta($product->get_id(),'max_sale_percentage',true);
+    }
+
+    /**
+     * Returns the min sale percentage of product
+     *
+     * @param WC_Product $product
+     * @return string|bool
+     */
+    public static function getMinSalePercentage(WC_Product $product): string|bool
+    {
+        return get_post_meta($product->get_id(),'min_sale_percentage',true);
+    }
+
+    /**
      * Returns the product's categories
      *
      * @param bool $hide
      * @param bool $addDefault
      * @param bool $rootCats
      * @param bool $onlyIDs
+     * @param bool $returnObject
      * @return array
      */
-    public static function getProductCats(bool $hide = true, bool $addDefault = true, bool $rootCats = false, bool $onlyIDs = false): array
+    public static function getProductCats(bool $hide = true, bool $addDefault = true, bool $rootCats = false, bool $onlyIDs = false, bool $returnObject = false): array
     {
         $args = [
             'taxonomy' => 'product_cat',
@@ -215,6 +315,9 @@ class Woocommerce
             $args['parent'] = 0;
 
         $terms = get_terms($args);
+
+        if ($returnObject)
+            return $terms;
 
         $options = [];
 
@@ -268,15 +371,19 @@ class Woocommerce
      */
     public static function getColorFromVariation(int $variationID): ?string
     {
-        $builder = new QueryBuilder();
+        $builder = QueryBuilder::getInstance();
 
-        return $builder->select('tm.meta_value')
-            ->from(Table::WC_PRODUCT_ATTRIBUTES_LOOKUP,'pal')
-            ->innerJoin(Table::TERMMETA,'tm')
-            ->on('pal','term_id','=','tm','term_id')
-            ->where('pal.product_id','=',$variationID)
-            ->andWhere('tm.meta_key','=','color')
-            ->getVar();
+        return $builder->setQuery(
+            'SELECT meta_value
+                    FROM (
+                            (SELECT term_id FROM
+                            '.$builder->getPrefix().'wc_product_attributes_lookup WHERE
+                            product_id = '.$variationID.') AS t1
+                            INNER JOIN '.$builder->getPrefix().'termmeta AS t2
+                             ON t1.term_id = t2.term_id
+                         )
+                    WHERE meta_key = "color";'
+        )->getVar();
     }
 
     /**
@@ -284,19 +391,22 @@ class Woocommerce
      *
      * @param string $attributeName
      * @param string $optionName
-     * @return string
+     * @return string|null
      */
     public static function getColorFromAttribute(string $attributeName,string $optionName): ?string
     {
-        $builder = new QueryBuilder();
+        $builder = QueryBuilder::getInstance();
+
+        $optionName = urldecode($optionName);
 
         return $builder->setQuery(
-            "SELECT meta_value FROM wp_termmeta AS t3 
-                  WHERE (SELECT t2.term_id FROM 
-                   (SELECT term_id FROM wp_term_taxonomy 
-                   WHERE taxonomy = {$attributeName}) AS t1 INNER JOIN wp_terms AS t2
-                   ON t1.term_id = t2.term_id 
-                   WHERE t2.name = {$optionName}) = t3.term_id AND t3.meta_key = 'color';"
+            "SELECT tm.meta_value
+            FROM wp_terms AS t
+            INNER JOIN wp_term_taxonomy AS tt ON t.term_id = tt.term_id
+            INNER JOIN wp_termmeta AS tm ON tm.term_id = t.term_id
+            WHERE tt.taxonomy = '{$attributeName}'
+              AND t.name = '{$optionName}'
+              AND tm.meta_key = 'color';"
         )->getVar();
     }
 
@@ -348,12 +458,12 @@ class Woocommerce
 
         foreach($variants as $variant)
         {
-            $color = self::getColor($variant->getID());
+            $color = self::getColorFromVariation($variant->getID());
 
             if(is_null($color))
                 continue;
 
-            $colors[$variant->getAttributeName()] = $color;
+            $colors[] = $color;
         }
 
         if(empty($colors))
@@ -375,13 +485,13 @@ class Woocommerce
         foreach(array_keys($attributes) as $attribute)
         {
             $attribute = substr($attribute,3);
-
+            
             if(strpos($attribute,'color'))
             {
                 $ids = $attributes['pa_'.$attribute]->get_options();
 
                 //['سفید'] => #fff
-                foreach($ids as $id)
+                foreach($ids as $id) 
                     $colors[get_term($id)->name] = get_term_meta($id,'color',true);
             }
         }
@@ -413,15 +523,15 @@ class Woocommerce
     public static function getSaleDatedProducts(): array
     {
         $saleProducts = [];
-
+        
         //All OnSale Products (POST_IDs) , Whether Scheduled Or Not
         $productIDs = wc_get_product_ids_on_sale();
-
+        
         //If Scheduled , It Has _Sale_Price_Dates_from/to postmeta
         foreach( $productIDs as $productID )
         {
             $isDated = get_post_meta($productID,'_sale_price_dates_to',true);
-
+            
             if($isDated)
                 $saleProducts[$productID] = wc_get_product($productID)->get_title();
         }
@@ -439,7 +549,7 @@ class Woocommerce
     {
         $productID = $product->get_id();
 
-        //The Date(timestamp) Where Sale starts
+        //The Date(timestamp) Where Sale starts 
         $startDate = get_post_meta($productID,'_sale_price_dates_from',true);
 
         //The Date(timestamp) Where Sale ends
@@ -500,14 +610,12 @@ class Woocommerce
      */
     public static function getSaleRangeProducts(array $dateRange): array
     {
-        global $wpdb;
-
         $inRangeIDs = [];
         $start = $dateRange[0];
         $end = $dateRange[1];
 
         //post_id of products that have the specified start date
-        $builder = new QueryBuilder();
+        $builder = QueryBuilder::getInstance();
 
         $productIDs = $builder->select('post_id')
             ->from(Table::POSTMETA)
@@ -542,9 +650,10 @@ class Woocommerce
      * Returns all product brands
      *
      * @param bool $hideEmpty
+     * @param bool $returnObject
      * @return array
      */
-    public static function getBrands(bool $hideEmpty = true): array
+    public static function getBrands(bool $hideEmpty = true ,bool $returnObject = false): array
     {
         $options = [];
 
@@ -556,8 +665,16 @@ class Woocommerce
         );
 
         if (!is_wp_error($brands))
-            foreach ($brands as $brand)
-                $options[$brand->term_id] = $brand->name;
+        {
+            if ($returnObject)
+                return $brands;
+
+            else
+            {
+                foreach ($brands as $brand)
+                    $options[$brand->term_id] = $brand->name;
+            }
+        }
 
         return $options;
     }
@@ -590,10 +707,193 @@ class Woocommerce
      */
     public static function getCurrentProduct(): bool|WC_Product|null
     {
-        if (Elementor::isPreview() || Elementor::isEditor())
-            return wc_get_product(CodeStar::getOption('sample-product'));
+        if (is_null(self::$product) || self::$product->get_id() != get_the_ID())
+        {
+            if (Elementor::isPreview() || Elementor::isEditor())
+                self::$product = wc_get_product(CodeStar::getOption('sample-product'));
+
+            else
+                self::$product = wc_get_product(get_the_ID());
+
+            return self::$product;
+        }
 
         else
-            return wc_get_product(get_the_ID());
+            return self::$product;
+    }
+
+    /**
+     * Returns both average_rating and rating_count of product
+     *
+     * @param WC_Product $product
+     * @return array
+     */
+    public static function getProductRating(WC_Product $product): array
+    {
+        $query = QueryBuilder::getInstance();
+
+        return $query->select('average_rating','rating_count')
+            ->from(Table::WC_PRODUCT_META_LOOKUP)
+            ->where('product_id','=',$product->get_id())
+            ->getRow(OutputType::ASSOCIATIVE_ARRAY);
+    }
+
+    /**
+     * Finds the product variation that matches the default attribute values
+     *
+     * @param WC_Product $product
+     * @param array|null $defaultAttributes
+     * @return ProductVariant|null
+     */
+    public static function getDefaultVariation(WC_Product $product,array|null $defaultAttributes = null): ?ProductVariant
+    {
+        // null means it is not passed to the function
+        if (is_null($defaultAttributes))
+            $defaultAttributes = $product->get_default_attributes();
+
+        if (!empty($defaultAttributes))
+        {
+            $variations = new ProductVariations($product);
+            $variations = $variations->getVariants();
+            $foundVariation = false;
+
+            foreach ($variations as $variation)
+            {
+                foreach ($defaultAttributes as $name => $value)
+                {
+                    // this array has only one element , repeats only once
+                    if ($variation->hasAttribute($name,$value))
+                        $foundVariation = true;
+
+                    else
+                    {
+                        $foundVariation = false;
+                        break;
+                    }
+                }
+
+                if ($foundVariation)
+                    return $variation;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Checks whether the passed variation id is for the passed root product
+     *
+     * @param WC_Product $parentProduct if is variable , this instance is for parent product
+     * @param int $variationId
+     * @return bool
+     */
+    public static function isVariation(WC_Product $parentProduct,int $variationId): bool
+    {
+        $variationProduct = wc_get_product($variationId);
+
+        // if it is variation product
+        if ($variationProduct instanceof WC_Product_Variation)
+        {
+            if ($variationProduct->get_parent_id() != 0 &&
+                $variationProduct->get_parent_id() == $parentProduct->get_id())
+                return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Retrieves all colors
+     *
+     * @return array
+     */
+    public static function getAllColors(): array
+    {
+        $builder = QueryBuilder::getInstance();
+        $colorAttributes = get_option('color_attributes'); // color taxonomies
+        $orClauses = '';
+
+        if($colorAttributes)
+        {
+            foreach ($colorAttributes as $colorAttribute)
+            {
+                $orClauses .= 'attribute_id = '.$colorAttribute;
+
+                if (end($colorAttributes) != $colorAttribute)
+                    $orClauses .= ' OR ';
+            }
+
+            return $builder->setQuery(
+                'SELECT term_id FROM
+                   (SELECT attribute_name
+                    FROM '.$builder->getPrefix().'woocommerce_attribute_taxonomies
+                    WHERE '.$orClauses.') AS t1
+                   INNER JOIN '.$builder->getPrefix().'term_taxonomy AS t2
+                   ON t2.taxonomy LIKE CONCAT("pa_",t1.attribute_name);'
+            )->getColumn();
+        }
+
+        return [];
+    }
+
+    /**
+     * Retrieves all attributes from database
+     *
+     * @param bool $doSort whether to return retrieved data or do sorting before returning
+     * @return array
+     */
+    public static function getAllAttributes(bool $doSort = true): array
+    {
+        $builder = QueryBuilder::getInstance();
+
+        $results = $builder->setQuery(
+            "SELECT attribute_label,taxonomy,t3.term_id,name 
+               FROM (SELECT attribute_label,taxonomy,term_id 
+               FROM (".$builder->getPrefix()."woocommerce_attribute_taxonomies AS t1
+               INNER JOIN ".$builder->getPrefix()."term_taxonomy AS t2 ON
+               t2.taxonomy = CONCAT('pa_',t1.attribute_name))) AS t3
+               INNER JOIN ".$builder->getPrefix()."terms AS t4 ON t3.term_id = t4.term_id;"
+        )->getResults(OutputType::ASSOCIATIVE_ARRAY);
+
+        if (!$doSort)
+            return $results;
+
+        $attributes = [];
+
+        foreach ($results as $attribute)
+        {
+            $label = $attribute['attribute_label'];
+            $taxonomy = $attribute['taxonomy'];
+            $termId = $attribute['term_id'];
+            $name = $attribute['name'];
+
+            // if attribute already in array , append terms to it
+            if (isset($attributes[$label]))
+                $attributes[$label]['terms'][$name] = $termId;
+
+            // else add attribute it
+            else
+            {
+                $attributes[$label] = [
+                    'taxonomy' => $taxonomy,
+                    'terms' => [
+                        $name => $termId,
+                    ]
+                ];
+            }
+        }
+
+        return $attributes;
+    }
+
+    public static function getOrderCount(string $status): ?string
+    {
+        $builder = QueryBuilder::getInstance();
+
+        return $builder->select('count(*)')
+            ->from(Table::WC_ORDERS)
+            ->where('status','=',$status)
+            ->andWhere('customer_id','=',User::getCurrentUser(false))
+            ->getVar();
     }
 }

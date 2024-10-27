@@ -3,15 +3,14 @@
 namespace engine\settings;
 
 use engine\Loader;
+use engine\utils\CodeStar;
 
 defined('ABSPATH') || exit;
 
 Loader::require(__DIR__,'TemplateFactory.php');
 
-/**
- * if demo 1 is activated
- * require 'demoOne/Loader.php';
- *
- * if demo 2 is activated
- * require 'demoTwo/Loader.php';
- */
+if (CodeStar::getOption('active-demo') == 'demo1')
+    require 'demoOne/Loader.php';
+
+else if (CodeStar::getOption('active-demo') == 'demo2')
+    require 'demoTwo/Loader.php';

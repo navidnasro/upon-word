@@ -6,6 +6,7 @@ use engine\Loader;
 
 defined('ABSPATH') || exit;
 
+require_once 'Session.php';
 require_once 'Cookie.php';
 require_once 'Woocommerce.php';
 

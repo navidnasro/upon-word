@@ -200,4 +200,68 @@ class ProductVariant
         else
             return urldecode($this->variant['attributes']['pa_'.$name]);
     }
+
+    /**
+     * Checks if the variation includes the passed variable
+     *
+     * @param string $name
+     * @param string $value
+     * @return bool
+     */
+    public function hasAttribute(string $name,string $value): bool
+    {
+        // url decoding attribute name and value , turn them into readable text
+        $name = urldecode(str_replace(
+            [
+                'attribute_pa_',
+                'attribute_',
+                'pa_',
+                '_',
+                '-',
+                ',',
+                '?',
+                ' ',
+            ],
+            '',
+            $name
+        ));
+
+        $value = urldecode($value);
+
+        $hasAttributes = false; // considering it includes the attribute by default
+
+        foreach ($this->variant['attributes'] as $attributeName => $attributeValue)
+        {
+            // url decoding attribute name and value , turn them into readable text
+            $attributeName = urldecode(str_replace(
+                [
+                    'attribute_pa_',
+                    'attribute_',
+                    'pa_',
+                    '_',
+                    '-',
+                    ',',
+                    '?',
+                    ' ',
+                ],
+                '',
+                $attributeName
+            ));
+
+            $attributeValue = urldecode($attributeValue);
+
+            // if attributes names match , proceed with checking values
+            if ($attributeName == $name)
+            {
+                if ($attributeValue == $value)
+                {
+                    // value is matched and don't need checking others(as they wont match)
+                    $hasAttributes = true;
+                    break;
+                }
+            }
+        }
+
+        return $hasAttributes;
+    }
 }
