@@ -2,7 +2,7 @@
 
 <p>Welcome to <strong>UponWord</strong>, a powerful and flexible framework designed to streamline the development of WordPress themes. Whether you're a seasoned developer or just getting started, UponWord provides the tools and structure you need to create high-quality, maintainable themes with ease.</p>
 
-<img src="path-to-logo.png" alt="UponWord Logo">
+<img src="assets/img/logo.png" alt="UponWord Logo">
 
 <h2>Table of Contents</h2>
 <ul>
