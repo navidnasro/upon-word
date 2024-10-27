@@ -4,7 +4,7 @@
     "type": "wordpress-theme",
     "keywords": ["wordpress", "theme", "framework"],
     "homepage": "https://github.com/navidnasro/upon-word",
-    "license": "MIT",
+    "license": "GPL-3.0",
     "authors": [
         {
             "name": "Navid Nasrollahi",
@@ -16,6 +16,6 @@
     "require": {
         "php": ">=8.2",
         "composer/installers": "~1.0"
-    },
+    }
 }
 

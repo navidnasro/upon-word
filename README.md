@@ -72,7 +72,7 @@ public function themeSetup(): void{} // to configure after theme setup operation
 <pre>visiting <code>enums/Constants</code> and <code>enums/Defaults is all you need for configuration</code></pre>
 
 <h2>License</h2>
-<p>UponWord is open-sourced software licensed under the <a href="LICENSE">MIT license</a>.</p>
+<p>UponWord is open-sourced software licensed under the <a href="LICENSE">GNU General Public License v3.0 (GPL-3.0)</a>.</p>
 
 <h2>Contact</h2>
 <p>For any questions or feedback, feel free to reach out:</p>
