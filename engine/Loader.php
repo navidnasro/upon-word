@@ -36,6 +36,7 @@ class Loader
         }
 
         require_once 'AjaxHandler.php';
+        require_once 'ajax/Loader.php';
 
         require_once 'walkers/Loader.php';
         require_once 'elementor/Loader.php';
