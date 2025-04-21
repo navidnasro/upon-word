@@ -193,35 +193,35 @@ class QueryBuilder
     {
         global $wpdb;
 
-        return $wpdb->get_var($wpdb->prepare($this->query),$column,$row);
+        return $wpdb->get_var($this->query,$column,$row);
     }
 
     public function getRow(OutputType $outputType = OutputType::OBJECT,int $row = 0): object|array|null
     {
         global $wpdb;
 
-        return $wpdb->get_row($wpdb->prepare($this->query),$outputType->value,$row);
+        return $wpdb->get_row($this->query,$outputType->value,$row);
     }
 
     public function getColumn(int $col = 0): array
     {
         global $wpdb;
 
-        return $wpdb->get_col($wpdb->prepare($this->query),$col);
+        return $wpdb->get_col($this->query,$col);
     }
 
     public function getResults(OutputType $outputType = OutputType::OBJECT): array|object|null
     {
         global $wpdb;
 
-        return $wpdb->get_results($wpdb->prepare($this->query),$outputType->value);
+        return $wpdb->get_results($this->query,$outputType->value);
     }
 
     public function doQuery(): void
     {
         global $wpdb;
 
-        $wpdb->query($wpdb->prepare($this->query));
+        $wpdb->query($this->query);
     }
 
     public function resetQuery(): void

@@ -9,7 +9,7 @@ defined('ABSPATH') || exit;
 
 class CodeStar
 {
-    private static ?array $options = null;
+    private static array|bool|null $options = null;
 
     public static function getOptions(): mixed
     {
