@@ -77,4 +77,4 @@ class Loader
     }
 }
 
-Loader::load();
+//Loader::load();
